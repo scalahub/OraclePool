@@ -270,8 +270,8 @@ class RecoverLiveEpochBoxSpec extends PropSpec with Matchers with ScalaCheckDriv
 
       the[Exception] thrownBy commitAndCollect(dataPointInfo1) should have message "Script reduced to false" // min data points is 4
 //      commitAndCollect(dataPointInfo1)
-      commitAndCollect(dataPointInfo2)
-      commitAndCollect(dataPointInfo3)
+//      commitAndCollect(dataPointInfo2)
+//      commitAndCollect(dataPointInfo3)
       commitAndCollect(dataPointInfo4)
       commitAndCollect(dataPointInfo5)
 

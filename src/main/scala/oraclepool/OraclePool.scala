@@ -6,7 +6,7 @@ trait OraclePool extends Contracts {
   override def prepPeriod = 2 // blocks
   override def buffer = 2 // blocks
   override def maxDeviation: Int = 5 // percent
-  override def minOracleBoxes: Int = 2
+  override def minOracleBoxes: Int = 4
   /*
     poolNFT           008a94c8c76bbaa1f0a346697d1794eb31d94b37e5533af9cc0b6932bf159339
     12 oracle Tokens  5579de48d16e54ddb34df789d418e1f10c119e15a824ea32dc21696c067f9fbe
