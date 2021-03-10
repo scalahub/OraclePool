@@ -1,0 +1,151 @@
+{
+  "constants": [
+    {
+      "name": "poolNFT",
+      "type": "CollByte",
+      "value": "008a94c8c76bbaa1f0a346697d1794eb31d94b37e5533af9cc0b6932bf159339"
+    },
+    {
+      "name": "epochLengthWithBuffer",
+      "type": "Int",
+      "value": "6"
+    },
+    {
+      "name": "myAddress",
+      "type": "Address",
+      "value": "9faWv1ZgLgB34F5tam5WnDNzeZAyDQPS9vWtp4mFcxRTW4RkDwQ"
+    },
+    {
+      "name": "epochPrepAddress",
+      "type": "Address",
+      "value": "2Qgfhy6m7Exe9deFZcZBDbN83eQmLQNCcYhuTFMRKLNsrKHgcRsZ9Y2mdEyFumYY7CqRDpAVDrQ1L28vYQEt5yyVEabpRQfvukeKLaAXE4g4Rz67wUa7bCtNvyJDVsJebc1wKy37LwTktSUZKLaxUd1TQShu9jN3rD3h7xRJvuqznTwm3h3r2Hz8GRKu3L8pFUCGCXBZsGMCVyXPrhc3ztDSL9V8cWnKU7HSVrA4YS3BA38ATicDzsoFhLAN6H7jjEZxa1jBEc91ncVdR9zrzXPNJi683GAWShjFyLqfiNHLtsoj152vdrLDJgoUem1gPntLPd3LFZQgkHupqfRDgAkxDFArpdQi2LboaWPhg7yiDPsLWD5gKTgervQ619NKbYrMi2CUGqx4XVv7VGXsxXJHtQ7TzwWpx4K6g6tyFRfFAVB8Zr2nvu4Tt8SbRPXpPSGg1moVM8bkeCaxxfmW4TvdT5X5famkZwqAmF"
+    },
+    {
+      "name": "liveEpochAddress",
+      "type": "Address",
+      "value": "NTkuk55NdwCVifH8NTWdK7o6Z4S6RcZPmprheumFHoc537SDnupXc6VNPGTYm1p93TRoSA1pqMkwuobnJDoUwDnx553shYcwgboPrYtYe5Xit4fDfXAtxvqoEDq8zFxVUnu2qJmy9BH7vN9kVPTkZLEaGvpmQQqcvvqhaCcazd7iapmXu2HsfhMwWshqJwDvxD4miYCGWtmfkppcn3RReFEhEFVZuLhZCFMEEJ8aTMtKvpmir54jk9hiiEfHE6drKNw3HQZyPng2UJq3gAyyPcH7KbZLwAxwHqeUvZvMuSS2ZaFUGn65yGGpzr1vSYjHvbDxRcUfh8B4cxzqJ2on9B9thuzPUDcPrLRvYgbpWQUqvcakhvgMWUDiJyJjKb5Q7y6qX2tiwxKyXH6crSxgz6kuJRKLAPDMKBPhawU5skbAkmcgbuAcpRxABnGqmT5Y5ZLckqSfrsEHyktPpkhrivi1yr5zVG35vmK6kNJrcMDzrGn6GuJanoUzKvqm7DNgmZjVdGDdvafXF8r83kgizHMNP7yzVXeYD7gt58oLa5JpvyXhBdN3vcS2qR"
+    },
+    {
+      "name": "minPostingCost",
+      "type": "Long",
+      "value": "14000000"
+    },
+    {
+      "name": "one",
+      "type": "Long",
+      "value": "1"
+    },
+    {
+      "name": "expectedEpochPrepScriptHash",
+      "type": "CollByte",
+      "value": "8e46a04822fb92c428e29148d0fb57b65820a5052dbddd8ba3fbc053874a85b0"
+    }
+  ],
+  "postConditions" : [
+    {
+      "first": "HEIGHT",
+      "second": "epochValidity",
+      "op" : "Gt"
+    },
+    {
+      "first": "epochPrepScriptHash",
+      "second": "expectedEpochPrepScriptHash",
+      "op": "Eq"
+    }
+  ],
+  "inputs": [
+    {
+      "address": {
+        "value": "epochPrepAddress"
+      },
+      "tokens" : [
+        {
+          "id" : {
+            "value": "poolNFT"
+          }
+        }
+      ],
+      "registers": [
+        {
+          "num": "R4",
+          "name": "currentDatapoint",
+          "type": "Long"
+        },
+        {
+          "num": "R5",
+          "type": "Int",
+          "name": "epochValidity"
+        }
+      ],
+      "nanoErgs": {
+        "name": "inputNanoErgs",
+        "value": "minPostingCost",
+        "filter": "Ge"
+      }
+    }
+  ],
+  "unaryOps": [
+    {
+      "name": "epochPrepScriptHash",
+      "op": "hash",
+      "from": "epochPrepCollByte"
+    },
+    {
+      "name": "epochPrepCollByte",
+      "op": "ToCollByte",
+      "from": "epochPrepErgoTree"
+    },
+    {
+      "name": "epochPrepErgoTree",
+      "op": "ToErgoTree",
+      "from": "epochPrepAddress"
+    }
+  ],
+  "binaryOps": [
+    {
+      "name": "endHeight",
+      "first": "HEIGHT",
+      "second": "epochLengthWithBuffer",
+      "op": "add"
+    }
+  ],
+  "outputs": [
+    {
+      "address": {
+        "value": "liveEpochAddress"
+      },
+      "tokens": [
+        {
+          "index": 0,
+          "id": {
+            "value": "poolNFT"
+          },
+          "amount": {
+            "value": "one"
+          }
+        }
+      ],
+      "registers": [
+        {
+          "num": "R4",
+          "value": "currentDatapoint",
+          "type": "Long"
+        },
+        {
+          "num": "R5",
+          "value": "endHeight",
+          "type": "Int"
+        },
+        {
+          "num": "R6",
+          "value": "epochPrepScriptHash",
+          "type": "CollByte"
+        }
+      ],
+      "nanoErgs": {
+        "value": "inputNanoErgs"
+      }
+    }
+  ],
+  "fee": 10000000
+}

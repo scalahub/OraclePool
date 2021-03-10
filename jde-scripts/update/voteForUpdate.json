@@ -1,0 +1,126 @@
+{
+  "constants": [
+    {
+      "name": "newEpochPrepAddress",
+      "type": "Address",
+      "value": "2Qgfhy6m7Exe9deFZcYsSVzhfk39CD8miVnxHuGPPb8J5534aDycpy44zPMPEgLspoiwdRyc5LkTaqeE3tVM3KagY7goHFHXdZrEobWkqXP3Rczj3skXr6g4N4gg6aWVU1DrUpgJWshpeFmPvnbDqXJSa3gejK7dsp4N53iLMsx2xQaf2SV7kqBVGbmMWVM7JH8aorNXyh94Wn18o7pN4SWySoN6fG5X2J5JiSzh7FwY7E2TFJLW1MvvFcgTXTJF79tkAxNSc18hDiVHig9yFxDGg3zPDSFD589Ew4C6TY2AWhe6dVdQCP1cCptJyxSTcRqW9JJFwkmZtMbCNsfXYwmY67RGwfwbfcYjuJJtd4u5K7FJ1EcwMr4WjpTf95NFgQgBXVvo7YfuwzvkVDhrgFPKKhje2U37fsmNbW2GKREmn6Yqhxoy16uQXHyb8p13yjs4QHNTqcV9zRAb1T3PRbh7Fk5NGSWjkCJeHB"
+    },
+    {
+      "name": "numVotes",
+      "type": "Long",
+      "value": "6"
+    },
+    {
+      "name": "ballotToken",
+      "type": "CollByte",
+      "value": "f502b38d40208f8faf0e4dd9f74952e17b24d8f96abb9c9f57f8e961d25a8e37"
+    },
+    {
+      "name": "myAddress",
+      "type": "Address",
+      "value": "9faWv1ZgLgB34F5tam5WnDNzeZAyDQPS9vWtp4mFcxRTW4RkDwQ"
+    },
+    {
+      "name": "minStorageRent",
+      "type": "Long",
+      "value": "1000000"
+    },
+    {
+      "name": "updateNFT",
+      "type": "CollByte",
+      "value": "7b8e292c4a89efb509c89b10111468223678e0a855b20607a0b9fce80a9af694"
+    },
+    {
+      "name": "updateAddress",
+      "type": "Address",
+      "value": "9vQZrzvghytfwhiSPKe6cWfq7pjQCk537UA3BWRMUCnAYVgVE9p5beEiX4WLtyFRtWptCqmzA8Ga9GFhZpRVJGRD87fCwVWBM3xxK7VaZDV8oWWZhTCRgCURxNkYHS5nUcSoc2Y8Up8dABy8ncyYznkvurCJaNH89XcwsJTZLN5WHtPJrJe1ESAKvbzcLqUqgnuTa7Ru1VzJ5kbWtudwCrH2YfhoQViipJNQCPkTfzSFVUiX3dLfTxTn647v2Li5iEDrJcTyvZYaafH9WJvoCp24PniKZQ6J5bb9Sv4pDmwZEnk3rvUELQYfCiaf4Npeg2vY11TFqwbjjvNZfq7EKyL59JhkSVUYP3KMJWQpcCLmWNfXwt5GwFBmff2sWfPCahfHQYbWhzc8NGsy5Ruc6XEgFAG8NPDbYwWdxUGnjUwGNaQCULBT2jpReSrJ2aKSf8AZKgLiaidHb5bFQ5u7Yt9jzbQdZgqYYpddEFqeiAaV1LQnskXhRWvsSz4pBKm7TDa2sWzuPTq9u11huTjy96wtKpsBTwFjegV"
+    }
+  ],
+  "auxInputs": [
+    {
+      "id": {
+        "name": "updateBoxId"
+      },
+      "address": {
+        "value": "updateAddress"
+      },
+      "tokens": [
+        {
+          "index": 0,
+          "id": {
+            "value": "updateNFT"
+          }
+        }
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "address": {
+        "value": "myAddress"
+      },
+      "tokens": [
+        {
+          "id": {
+            "value": "ballotToken"
+          },
+          "amount": {
+            "value": "numVotes",
+            "filter": "Ge"
+          }
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "address": {
+        "value": "myAddress"
+      },
+      "tokens": [
+        {
+          "index": 0,
+          "id": {
+            "value": "ballotToken"
+          },
+          "amount": {
+            "value": "numVotes"
+          }
+        }
+      ],
+      "registers": [
+        {
+          "num": "R4",
+          "value": "newEpochPrepErgoTreeHash",
+          "type": "CollByte"
+        },
+        {
+          "num": "R5",
+          "value": "updateBoxId",
+          "type": "CollByte"
+        }
+      ],
+      "nanoErgs": {
+        "value": "minStorageRent"
+      }
+    }
+  ],
+  "unaryOps": [
+    {
+      "name": "newEpochPrepErgoTreeHash",
+      "op": "Hash",
+      "from": "newEpochPrepErgoTreeBytes"
+    },
+    {
+      "name": "newEpochPrepErgoTree",
+      "from": "newEpochPrepAddress",
+      "op": "ToErgoTree"
+    },
+    {
+      "name": "newEpochPrepErgoTreeBytes",
+      "from": "newEpochPrepErgoTree",
+      "op": "ToCollByte"
+    }
+  ],
+  "fee": 2000000
+}

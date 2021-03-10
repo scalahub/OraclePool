@@ -1,0 +1,164 @@
+{
+  "constants": [
+    {
+      "name": "newEpochPrepAddress",
+      "type": "Address",
+      "value": "2Qgfhy6m7Exe9deFZcYsSVzhfk39CD8miVnxHuGPPb8J5534aDycpy44zPMPEgLspoiwdRyc5LkTaqeE3tVM3KagY7goHFHXdZrEobWkqXP3Rczj3skXr6g4N4gg6aWVU1DrUpgJWshpeFmPvnbDqXJSa3gejK7dsp4N53iLMsx2xQaf2SV7kqBVGbmMWVM7JH8aorNXyh94Wn18o7pN4SWySoN6fG5X2J5JiSzh7FwY7E2TFJLW1MvvFcgTXTJF79tkAxNSc18hDiVHig9yFxDGg3zPDSFD589Ew4C6TY2AWhe6dVdQCP1cCptJyxSTcRqW9JJFwkmZtMbCNsfXYwmY67RGwfwbfcYjuJJtd4u5K7FJ1EcwMr4WjpTf95NFgQgBXVvo7YfuwzvkVDhrgFPKKhje2U37fsmNbW2GKREmn6Yqhxoy16uQXHyb8p13yjs4QHNTqcV9zRAb1T3PRbh7Fk5NGSWjkCJeHB"
+    },
+    {
+      "name": "oldEpochPrepAddress",
+      "type": "Address",
+      "value": "2Qgfhy6m7Exe9deFZcZBDbN83eQmLQNCcYhuTFMRKLNsrKHgcRsZ9Y2mdEyFumYY7CqRDpAVDrQ1L28vYQEt5yyVEabpRQfvukeKLaAXE4g4Rz67wUa7bCtNvyJDVsJebc1wKy37LwTktSUZKLaxUd1TQShu9jN3rD3h7xRJvuqznTwm3h3r2Hz8GRKu3L8pFUCGCXBZsGMCVyXPrhc3ztDSL9V8cWnKU7HSVrA4YS3BA38ATicDzsoFhLAN6H7jjEZxa1jBEc91ncVdR9zrzXPNJi683GAWShjFyLqfiNHLtsoj152vdrLDJgoUem1gPntLPd3LFZQgkHupqfRDgAkxDFArpdQi2LboaWPhg7yiDPsLWD5gKTgervQ619NKbYrMi2CUGqx4XVv7VGXsxXJHtQ7TzwWpx4K6g6tyFRfFAVB8Zr2nvu4Tt8SbRPXpPSGg1moVM8bkeCaxxfmW4TvdT5X5famkZwqAmF"
+    },
+    {
+      "name": "updateNFT",
+      "type": "CollByte",
+      "value": "7b8e292c4a89efb509c89b10111468223678e0a855b20607a0b9fce80a9af694"
+    },
+    {
+      "name": "poolNFT",
+      "type": "CollByte",
+      "value": "008a94c8c76bbaa1f0a346697d1794eb31d94b37e5533af9cc0b6932bf159339"
+    },
+    {
+      "name": "updateAddress",
+      "type": "Address",
+      "value": "9vQZrzvghytfwhiSPKe6cWfq7pjQCk537UA3BWRMUCnAYVgVE9p5beEiX4WLtyFRtWptCqmzA8Ga9GFhZpRVJGRD87fCwVWBM3xxK7VaZDV8oWWZhTCRgCURxNkYHS5nUcSoc2Y8Up8dABy8ncyYznkvurCJaNH89XcwsJTZLN5WHtPJrJe1ESAKvbzcLqUqgnuTa7Ru1VzJ5kbWtudwCrH2YfhoQViipJNQCPkTfzSFVUiX3dLfTxTn647v2Li5iEDrJcTyvZYaafH9WJvoCp24PniKZQ6J5bb9Sv4pDmwZEnk3rvUELQYfCiaf4Npeg2vY11TFqwbjjvNZfq7EKyL59JhkSVUYP3KMJWQpcCLmWNfXwt5GwFBmff2sWfPCahfHQYbWhzc8NGsy5Ruc6XEgFAG8NPDbYwWdxUGnjUwGNaQCULBT2jpReSrJ2aKSf8AZKgLiaidHb5bFQ5u7Yt9jzbQdZgqYYpddEFqeiAaV1LQnskXhRWvsSz4pBKm7TDa2sWzuPTq9u11huTjy96wtKpsBTwFjegV"
+    }
+  ],
+  "inputs": [
+    {
+      "address": {
+        "value": "oldEpochPrepAddress"
+      },
+      "tokens": [
+        {
+          "index": 0,
+          "id": {
+            "value": "poolNFT"
+          },
+          "amount": {
+            "name": "oraclePoolNFTQuantity"
+          }
+        }
+      ],
+      "registers": [
+        {
+          "num": "R4",
+          "name": "r4EpochPrep",
+          "type": "Long"
+        },
+        {
+          "num": "R5",
+          "name": "r5EpochPrep",
+          "type": "Int"
+        }
+      ],
+      "nanoErgs": {
+        "name": "epochPrepBoxNanoErgs"
+      }
+    },
+    {
+      "address": {
+        "value": "updateAddress"
+      },
+      "tokens": [
+        {
+          "id": {
+            "value": "updateNFT"
+          },
+          "amount": {
+            "name": "updateNFTQuantity"
+          }
+        }
+      ],
+      "registers": [
+        {
+          "num": "R4",
+          "value": "newEpochPrepErgoTreeHash",
+          "type": "CollByte"
+        }
+      ],
+      "nanoErgs": {
+        "name": "updateBoxNanoErgs"
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "address": {
+        "value": "newEpochPrepAddress"
+      },
+      "tokens": [
+        {
+          "index": 0,
+          "id": {
+            "value": "poolNFT"
+          },
+          "amount": {
+            "value": "oraclePoolNFTQuantity"
+          }
+        }
+      ],
+      "registers": [
+        {
+          "num": "R4",
+          "value": "r4EpochPrep",
+          "type": "Long"
+        },
+        {
+          "num": "R5",
+          "value": "r5EpochPrep",
+          "type": "Int"
+        }
+      ],
+      "nanoErgs": {
+        "value": "epochPrepBoxNanoErgs"
+      }
+    },
+    {
+      "address": {
+        "value": "updateAddress"
+      },
+      "tokens": [
+        {
+          "index": 0,
+          "id": {
+            "value": "updateNFT"
+          },
+          "amount": {
+            "value": "updateNFTQuantity"
+          }
+        }
+      ],
+      "registers": [
+        {
+          "num": "R4",
+          "value": "newEpochPrepErgoTreeHash",
+          "type": "CollByte"
+        }
+      ],
+      "nanoErgs": {
+        "value": "updateBoxNanoErgs"
+      }
+    }
+  ],
+  "unaryOps": [
+    {
+      "name": "newEpochPrepErgoTreeHash",
+      "op": "Hash",
+      "from": "newEpochPrepErgoTreeBytes"
+    },
+    {
+      "name": "newEpochPrepErgoTree",
+      "from": "newEpochPrepAddress",
+      "op": "ToErgoTree"
+    },
+    {
+      "name": "newEpochPrepErgoTreeBytes",
+      "from": "newEpochPrepErgoTree",
+      "op": "ToCollByte"
+    }
+  ],
+  "fee": 20000000
+}

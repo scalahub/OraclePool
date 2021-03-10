@@ -1,0 +1,148 @@
+{
+  "constants": [
+    {
+      "name": "myAddress",
+      "type": "Address",
+      "value": "9faWv1ZgLgB34F5tam5WnDNzeZAyDQPS9vWtp4mFcxRTW4RkDwQ"
+    },
+    {
+      "name": "datapoint",
+      "type": "Long",
+      "value": "1000000"
+    },
+    {
+      "name": "poolNFT",
+      "type": "CollByte",
+      "value": "008a94c8c76bbaa1f0a346697d1794eb31d94b37e5533af9cc0b6932bf159339"
+    },
+    {
+      "name": "participantToken",
+      "type": "CollByte",
+      "value": "5579de48d16e54ddb34df789d418e1f10c119e15a824ea32dc21696c067f9fbe"
+    },
+    {
+      "name": "participantAddress",
+      "type": "Address",
+      "value": "9gLGZ9AtJ6AFHdpkH6pnJ2LNx98STt4E23ZrkH2T1pFysTCCbjh"
+    },
+    {
+      "name": "participantPubKey",
+      "type": "GroupElement",
+      "value": "02eee2fe4a7e75e91661d7a8453d82519453c06d7e412d6a927526fe5cf1d9301a"
+    },
+    {
+      "name": "datapointAddress",
+      "type": "Address",
+      "value": "AucEQEJ3Y5Uhmu4o8dnoztRiAKKTErrhugq6EyACQ4SrK7NFAds5u9B93Xvb7heGC9oGL88F8muu6T6MARfqKpHS2ce1jZ6x8Ju6j9n4AvWkcQxBaLUq36wHGKmiCqRDtKT5tbhZ7hQbK7WuMAejKD7aW91yTBrBNHAXDVmZznmYjzJqDQGuPMsRHQSYGGyW5H2p"
+    },
+    {
+      "name": "liveEpochAddress",
+      "type": "Address",
+      "value": "NTkuk55NdwCVifH8NTWdK7o6Z4S6RcZPmprheumFHoc537SDnupXc6VNPGTYm1p93TRoSA1pqMkwuobnJE7Q7w6UgXPRX9zpFrhEsCNFXVTNqxuduqLnQkMc8FSumuW6PA5KvNE3aq4iVMiMnt7eRS7BRnynCR5AKvuAhvWzvbqfNT9hRzxoybDFu8JNoc3nt25cpwh3Q4RyvodH51MHT91dWrVLUFjRAz8h2Fi12s7uU9XhRyDYFUhSmAVyRzBJ5sFxo25FzwKMSc9NK6KNPgXg6tEWSZs6nQUpz1Xfyfwh5NgDU8yDe3hhS76ze8hwXxTC1HwsCF9LPVAXn4C79CgJgJSTMj19HsCttD38stiGQSJLCdZejpEsDfXuq6VmnMdSMQw2eCfTzgRhQmGXQ9GSJx9y4rmMe5V4agaJeoWhSL5oao7Ee2wX2bgg4ydkYG6zaUC5yeLAVcQhtB56kN6uWttX7T66KNcgF8KjWapztQQT9vvaZoCUrDD3GGtu3pBU7zKsvjDTFn18NH9oKDCCGnrqNfUMuprmZM9onLawgjeHFXormH1uTg"
+    },
+    {
+      "name": "one",
+      "type": "Long",
+      "value": "1"
+    }
+  ],
+  "inputs": [
+    {
+      "address": {
+        "value": "datapointAddress"
+      },
+      "tokens": [
+        {
+          "id": {
+            "value": "participantToken"
+          }
+        }
+      ],
+      "registers": [
+        {
+          "num": "R4",
+          "value": "participantPubKey",
+          "type": "GroupElement"
+        }
+      ],
+      "nanoErgs": {
+        "name": "datapointNanoErgs"
+      }
+    }
+  ],
+  "dataInputs": [
+    {
+      "address": {
+        "value": "liveEpochAddress"
+      },
+      "id": {
+        "name": "liveEpochBoxId"
+      },
+      "tokens" : [
+        {
+          "id" : {
+            "value": "poolNFT"
+          }
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "address": {
+        "value": "datapointAddress"
+      },
+      "tokens": [
+        {
+          "index": 0,
+          "id": {
+            "value": "participantToken"
+          },
+          "amount": {
+            "value": "one"
+          }
+        }
+      ],
+      "registers": [
+        {
+          "num": "R4",
+          "value": "participantPubKey",
+          "type": "GroupElement"
+        },
+        {
+          "num": "R5",
+          "value": "liveEpochBoxId",
+          "type": "CollByte"
+        },
+        {
+          "num": "R6",
+          "value": "datapoint",
+          "type": "Long"
+        }
+      ],
+      "nanoErgs": {
+        "value": "datapointNanoErgs"
+      }
+    }
+  ],
+  "unaryOps" : [
+    {
+      "name": "participantErgoTree",
+      "op" : "proveDlog",
+      "from" : "participantPubKey"
+    },
+    {
+      "name": "participantAddressComputed",
+      "op" : "toAddress",
+      "from" : "participantErgoTree"
+    }
+  ],
+  "postConditions" : [
+    {
+      "first": "participantAddressComputed",
+      "second": "participantAddress",
+      "op" : "Eq"
+    }
+  ],
+  "fee": 10000000
+}

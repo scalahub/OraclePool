@@ -1,0 +1,275 @@
+{
+  "constants": [
+    {
+      "name": "newEpochPrepAddress",
+      "type": "Address",
+      "value": "2Qgfhy6m7AhxRU3xMHBXLtbXLWj6cs8cvSCsJdHh9rkZx64ZnzDDxBWBh5GsPkSuXcxfMGt36fLchZk2fMxXqxBzUcisq7HRo8kZA3Gp9fjqJYZAtuomUSkirWTEiM6X8kgahypcsRAvEt2PcXX2BLcJo1VfR7XggvhnNLCTqBxRDaWMVsERXVWVuoEU3DPNz67EVVnRdEqpuMUo7yoGZCSDufujyWHWszNmdCMEDBuF9WDEw3efnFMg8W81AYZJZcnAggfoZNtpjYx7stN26GRvW32m9x8AnW2Sz8gigg3rTyhavPFgwA2D1W59UQ1pTP2Dgb5kDT1yRi42Q5uimXaAbzGLqhz2tMmh1ds5X7N9LbKNnoyqe9N9agJ7GVeFBt6VUYAmfwuguWrgeA62kk2qerckhNdyBPjwSQmKMzomnwxkNZ5sKwgAAnjzMwfyJwbyueACgFe4dWomTSEXEDFBG4gqCTW2NhGw1p"
+    },
+    {
+      "name": "ballotToken",
+      "type": "CollByte",
+      "value": "004b2ca8adbcf9f15c1149fab8264dbcafbdd3c784bb4fae7ee549c16774914b"
+    },
+    {
+      "name": "ballot_box_id_oracle1",
+      "type": "CollByte",
+      "value": "639a1303bafa12e480f110a060248f8d69b6f4fc0c83c388dcdf9b5b2d25a689"
+    },
+    {
+      "name": "ballot_box_id_oracle2",
+      "type": "CollByte",
+      "value": "fcadd9c47bed168c512dec94ebffc31d3de703c609a06c005a8eac5af181412c"
+    },
+    {
+      "name": "ballot_box_id_oracle3",
+      "type": "CollByte",
+      "value": "a7f2876d95476beb516a61a82b6369f0b54177d4f3c17154eb2d1308ac2900c9"
+    },
+    {
+      "name": "ballot_box_id_oracle4",
+      "type": "CollByte",
+      "value": "81bf1b9045256b14ab417f8c1d6f6cc33d3f7a4c740524bdeee52923f254151a"
+    },
+    {
+      "name": "ballot_box_id_oracle5",
+      "type": "CollByte",
+      "value": "ffa136abe2f3fa203b73bcc3d151544e7ff8e3f9db3288b0d25214643bfb8166"
+    },
+    {
+      "name": "ballot_box_id_oracle6",
+      "type": "CollByte",
+      "value": "af8e62407d8ea88d438b97b5eda2d2bf6b3d7acffddec939bf701f2bfbd33689"
+    },
+    {
+      "name": "updateNFT",
+      "type": "CollByte",
+      "value": "00483e0ed4a9faba9f6e6c9629d9baca9751316639445ff6ecabd90fb2afa025"
+    },
+    {
+      "name": "updateAddress",
+      "type": "Address",
+      "value": "9vQZrzvghythEub2uuGhjKFGrPeC8cmxzRsngeojKT1zji7TjQiGBhkNkXbRbMKTt4aidvMYQifLiJXdoXKRqPHwjzcmU2KEMjnY2jBzb5xPHqqSMm1fgV5BK1sdjw67U8nMygZtyKfr6LNGCxSLQZ7ythDoaMWjgKZZLh5wHhgdxJWrn7oPmRTVf3z3ogjd78omiXPmhfLoC6yUajmCn1qhjk197YCHocXaUAvEvutHf9jiFQPWBxa5frry6eKSRVoWMwngaqwgrzTMyH9b7qAnCkMDxzYeCj2c7q1FCoH9vTwra8c5NiKrnEcWaP8AFwLxnoZMF9rogj6RVBTSXvKCsZiGZCvE9bT9rYvug5uyo2fuXkxPvGVGGkQa7buDCMonihZUeK2KTFyBtuvFTodCJXLkkxVLcxRorfpK7gNnp1St93iJh5Dg8hkjCeEvqMXb5KQ1VGP2m9sYjws6C9NbZvTNKFkohLv5ZwexUSU2KbAs2zQDytv9FwyZRgP5uSphBzoBWDiX1QEwv18ryFovCqTq4pU31or"
+    }
+  ],
+  "dataInputs": [
+    {
+      "id": {
+        "value": "ballot_box_id_oracle1"
+      },
+      "tokens": [
+        {
+          "index": 0,
+          "id": {
+            "value": "ballotToken"
+          }
+        }
+      ],
+      "registers": [
+        {
+          "num": "R4",
+          "type": "CollByte",
+          "value": "newEpochPrepErgoTreeHash"
+        },
+        {
+          "num": "R5",
+          "type": "CollByte",
+          "name": "updateBoxId"
+        }
+      ]
+    },
+    {
+      "id": {
+        "value": "ballot_box_id_oracle2"
+      },
+      "tokens": [
+        {
+          "index": 0,
+          "id": {
+            "value": "ballotToken"
+          }
+        }
+      ],
+      "registers": [
+        {
+          "num": "R4",
+          "type": "CollByte",
+          "value": "newEpochPrepErgoTreeHash"
+        },
+        {
+          "num": "R5",
+          "type": "CollByte",
+          "value": "updateBoxId"
+        }
+      ]
+    },
+    {
+      "id": {
+        "value": "ballot_box_id_oracle3"
+      },
+      "tokens": [
+        {
+          "index": 0,
+          "id": {
+            "value": "ballotToken"
+          }
+        }
+      ],
+      "registers": [
+        {
+          "num": "R4",
+          "type": "CollByte",
+          "value": "newEpochPrepErgoTreeHash"
+        },
+        {
+          "num": "R5",
+          "type": "CollByte",
+          "value": "updateBoxId"
+        }
+      ]
+    },
+    {
+      "id": {
+        "value": "ballot_box_id_oracle4"
+      },
+      "tokens": [
+        {
+          "index": 0,
+          "id": {
+            "value": "ballotToken"
+          }
+        }
+      ],
+      "registers": [
+        {
+          "num": "R4",
+          "type": "CollByte",
+          "value": "newEpochPrepErgoTreeHash"
+        },
+        {
+          "num": "R5",
+          "type": "CollByte",
+          "value": "updateBoxId"
+        }
+      ]
+    },
+    {
+      "id": {
+        "value": "ballot_box_id_oracle5"
+      },
+      "tokens": [
+        {
+          "index": 0,
+          "id": {
+            "value": "ballotToken"
+          }
+        }
+      ],
+      "registers": [
+        {
+          "num": "R4",
+          "type": "CollByte",
+          "value": "newEpochPrepErgoTreeHash"
+        },
+        {
+          "num": "R5",
+          "type": "CollByte",
+          "value": "updateBoxId"
+        }
+      ]
+    },
+    {
+      "id": {
+        "value": "ballot_box_id_oracle6"
+      },
+      "tokens": [
+        {
+          "index": 0,
+          "id": {
+            "value": "ballotToken"
+          }
+        }
+      ],
+      "registers": [
+        {
+          "num": "R4",
+          "type": "CollByte",
+          "value": "newEpochPrepErgoTreeHash"
+        },
+        {
+          "num": "R5",
+          "type": "CollByte",
+          "value": "updateBoxId"
+        }
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "id": {
+        "value": "updateBoxId"
+      },
+      "address": {
+        "name": "updateBoxAddress"
+      },
+      "tokens": [
+        {
+          "id": {
+            "value": "updateNFT"
+          },
+          "amount": {
+            "name": "updateNFTQuantity"
+          }
+        }
+      ],
+      "nanoErgs": {
+        "name": "updateBoxNanoErgs"
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "address": {
+        "value": "updateBoxAddress"
+      },
+      "tokens": [
+        {
+          "index": 0,
+          "id": {
+            "value": "updateNFT"
+          },
+          "amount": {
+            "value": "updateNFTQuantity"
+          }
+        }
+      ],
+      "registers": [
+        {
+          "num": "R4",
+          "value": "newEpochPrepErgoTreeHash",
+          "type": "CollByte"
+        }
+      ],
+      "nanoErgs": {
+        "value": "updateBoxNanoErgs"
+      }
+    }
+  ],
+  "unaryOps": [
+    {
+      "name": "newEpochPrepErgoTreeHash",
+      "op": "Hash",
+      "from": "newEpochPrepErgoTreeBytes"
+    },
+    {
+      "name": "newEpochPrepErgoTree",
+      "from": "newEpochPrepAddress",
+      "op": "ToErgoTree"
+    },
+    {
+      "name": "newEpochPrepErgoTreeBytes",
+      "from": "newEpochPrepErgoTree",
+      "op": "ToCollByte"
+    }
+  ],
+  "fee": 2000000
+}

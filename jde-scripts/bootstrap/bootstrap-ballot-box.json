@@ -1,0 +1,65 @@
+{
+  "constants": [
+    {
+      "name": "myAddress",
+      "type": "Address",
+      "value": "9hz1B19M44TNpmVe8MS4xvXyycehh5uP5aCfj4a6iAowj88hkd2"
+    },
+    {
+      "name": "participantAddress",
+      "type": "Address",
+      "value": "9htmJjmkqVm2ixtQZK7wb7ykZPX8V9axC56DjuEvnUdknyaNq3w"
+    },
+    {
+      "name": "ballotToken",
+      "type": "CollByte",
+      "value": "f502b38d40208f8faf0e4dd9f74952e17b24d8f96abb9c9f57f8e961d25a8e37"
+    },
+    {
+      "name": "bootstrapNanoErgs",
+      "type": "Long",
+      "value": "10000000"
+    },
+    {
+      "name": "one",
+      "type": "Long",
+      "value": "1"
+    }
+  ],
+  "inputs": [
+    {
+      "address": {
+        "value": "myAddress"
+      },
+      "tokens" : [
+        {
+          "id" : {
+            "value": "ballotToken"
+          }
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "address": {
+        "value": "participantAddress"
+      },
+      "tokens": [
+        {
+          "index": 0,
+          "id": {
+            "value": "ballotToken"
+          },
+          "amount": {
+            "value": "one"
+          }
+        }
+      ],
+      "nanoErgs": {
+        "value": "bootstrapNanoErgs"
+      }
+    }
+  ],
+  "fee": 10000000
+}

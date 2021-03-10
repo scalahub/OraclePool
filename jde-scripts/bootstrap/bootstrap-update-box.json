@@ -1,0 +1,82 @@
+{
+  "constants": [
+    {
+      "name": "myAddress",
+      "type": "Address",
+      "value": "9faWv1ZgLgB34F5tam5WnDNzeZAyDQPS9vWtp4mFcxRTW4RkDwQ"
+    },
+    {
+      "name": "updateAddress",
+      "type": "Address",
+      "value": "9vQZrzvghytfwhiSPKe6cWfq7pjQCk537UA3BWRMUCnAYVgVE9p5beEiX4WLtyFRtWptCqmzA8Ga9GFhZpRVJGRD87fCwVWBM3xxK7VaZDV8oWWZhTCRgCURxNkYHS5nUcSoc2Y8Up8dABy8ncyYznkvurCJaNH89XcwsJTZLN5WHtPJrJe1ESAKvbzcLqUqgnuTa7Ru1VzJ5kbWtudwCrH2YfhoQViipJNQCPkTfzSFVUiX3dLfTxTn647v2Li5iEDrJcTyvZYaafH9WJvoCp24PniKZQ6J5bb9Sv4pDmwZEnk3rvUELQYfCiaf4Npeg2vY11TFqwbjjvNZfq7EKyL59JhkSVUYP3KMJWQpcCLmWNfXwt5GwFBmff2sWfPCahfHQYbWhzc8NGsy5Ruc6XEgFAG8NPDbYwWdxUGnjUwGNaQCULBT2jpReSrJ2aKSf8AZKgLiaidHb5bFQ5u7Yt9jzbQdZgqYYpddEFqeiAaV1LQnskXhRWvsSz4pBKm7TDa2sWzuPTq9u11huTjy96wtKpsBTwFjegV"
+    },
+    {
+      "name": "poolNFT",
+      "type": "CollByte",
+      "value": "008a94c8c76bbaa1f0a346697d1794eb31d94b37e5533af9cc0b6932bf159339"
+    },
+    {
+      "name": "updateNFT",
+      "type": "CollByte",
+      "value": "7b8e292c4a89efb509c89b10111468223678e0a855b20607a0b9fce80a9af694"
+    },
+    {
+      "name": "bootstrapNanoErgs",
+      "type": "Long",
+      "value": "1000000"
+    },
+    {
+      "name": "one",
+      "type": "Long",
+      "value": "1"
+    },
+    {
+      "name": "dummyHash",
+      "type": "CollByte",
+      "value": "01"
+    }
+  ],
+  "inputs": [
+    {
+      "address": {
+        "value": "myAddress"
+      },
+      "tokens" : [
+        {
+          "id" : {
+            "value": "updateNFT"
+          }
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "address": {
+        "value": "updateAddress"
+      },
+      "tokens": [
+        {
+          "index": 0,
+          "id": {
+            "value": "updateNFT"
+          },
+          "amount": {
+            "value": "one"
+          }
+        }
+      ],
+      "registers": [
+        {
+          "num": "R4",
+          "value": "dummyHash",
+          "type": "CollByte"
+        }
+      ],
+      "nanoErgs": {
+        "value": "bootstrapNanoErgs"
+      }
+    }
+  ],
+  "fee": 10000000
+}
