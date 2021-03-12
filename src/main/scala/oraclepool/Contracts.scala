@@ -34,8 +34,6 @@ trait Contracts {
 
   env.setCollByte("oracleTokenId", oracleToken.decodeHex)
   env.setCollByte("poolNFT", poolNFT.decodeHex)
-  env.setLong("minPoolBoxValue", minPoolBoxValue)
-  env.setLong("oracleReward", oracleReward)
 
   val liveEpochScript: String =
     s"""{ // This box:
