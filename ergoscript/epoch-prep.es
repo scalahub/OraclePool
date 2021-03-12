@@ -11,6 +11,9 @@
   val maxNewEpochHeight = HEIGHT + 6 + 2
   val minNewEpochHeight = HEIGHT + 6
 
+  // below base64 value is encoding of (the ergotree of) the live epoch script
+  // to check yourself, first compile the live epoch script and then get its ergotree and then its hash, and finally convert to base64
+
   val poolAction = if (OUTPUTS(0).R6[Coll[Byte]].isDefined) {
     val isliveEpochOutput = OUTPUTS(0).R6[Coll[Byte]].get == blake2b256(SELF.propositionBytes) &&
                             blake2b256(OUTPUTS(0).propositionBytes) == fromBase64("MiTSygVNm4DrFclFByzSn8rHcbjo2Psvc4RoRTQcEz4=")
@@ -41,8 +44,7 @@
     )
   }
 
-  // below value e44pLEqJ77UJyJsQERRoIjZ44KhVsgYHoLn86Aqa9pQ= is the base64 encoding of the hash of (the ergotree of) the live epoch script
-  // to check yourself, first compile the live epoch script and then get its ergotree and then its hash, and finally convert to base64
+  // below value e44pLEqJ77UJyJsQERRoIjZ44KhVsgYHoLn86Aqa9pQ= is the base64 encoding of the update NFT
 
   val updateAction = INPUTS(1).tokens(0)._1 == fromBase64("e44pLEqJ77UJyJsQERRoIjZ44KhVsgYHoLn86Aqa9pQ=") && CONTEXT.dataInputs.size == 0
 
