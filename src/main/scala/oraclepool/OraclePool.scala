@@ -2,11 +2,11 @@ package oraclepool
 
 trait OraclePool extends Contracts {
   lazy val minBoxValue = 1000000 // min value to remain AFTER paying rewards. For min value to keep BEFORE rewards, see minPoolBoxValue
-  override def livePeriod = 3 // blocks
+  override def livePeriod = 4 // blocks
   override def prepPeriod = 2 // blocks
   override def buffer = 2 // blocks
   override def maxDeviation: Int = 5 // percent
-  override def minOracleBoxes: Int = 4
+  override def minOracleBoxes: Int = 3
   /*
     poolNFT           008a94c8c76bbaa1f0a346697d1794eb31d94b37e5533af9cc0b6932bf159339
     12 oracle Tokens  5579de48d16e54ddb34df789d418e1f10c119e15a824ea32dc21696c067f9fbe

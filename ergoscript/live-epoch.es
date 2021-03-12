@@ -44,10 +44,10 @@
 
   sigmaProp(
     blake2b256(OUTPUTS(0).propositionBytes) == epochPrepScriptHash &&
-    oracleBoxes.size >= 1 &&
+    oracleBoxes.size >= 3 &&
     OUTPUTS(0).tokens == SELF.tokens &&
     OUTPUTS(0).R4[Long].get == average &&
-    OUTPUTS(0).R5[Int].get == SELF.R5[Int].get + 5 &&
+    OUTPUTS(0).R5[Int].get == SELF.R5[Int].get + 6 &&
     OUTPUTS(0).value >= SELF.value - (oracleBoxes.size + 1) * 1000000 &&
     rewardAndOrderingCheck._2 &&
     lastDataPoint >= firstDataPoint - delta

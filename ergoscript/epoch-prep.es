@@ -3,17 +3,17 @@
   // R4: The finalized data point from collection
   // R5: Height the epoch will end
 
-  val canStartEpoch = HEIGHT > SELF.R5[Int].get - 3
+  val canStartEpoch = HEIGHT > SELF.R5[Int].get - 4
   val epochNotOver = HEIGHT < SELF.R5[Int].get
   val epochOver = HEIGHT >= SELF.R5[Int].get
   val enoughFunds = SELF.value >= 14000000
 
-  val maxNewEpochHeight = HEIGHT + 5 + 2
-  val minNewEpochHeight = HEIGHT + 5
+  val maxNewEpochHeight = HEIGHT + 6 + 2
+  val minNewEpochHeight = HEIGHT + 6
 
   val poolAction = if (OUTPUTS(0).R6[Coll[Byte]].isDefined) {
     val isliveEpochOutput = OUTPUTS(0).R6[Coll[Byte]].get == blake2b256(SELF.propositionBytes) &&
-                            blake2b256(OUTPUTS(0).propositionBytes) == fromBase64("DggVrcSDB/I3av1Nv7G0xRuiBL9f7pf4SDTbJ4UU33s=")
+                            blake2b256(OUTPUTS(0).propositionBytes) == fromBase64("MiTSygVNm4DrFclFByzSn8rHcbjo2Psvc4RoRTQcEz4=")
     ( // start next epoch
       epochNotOver && canStartEpoch && enoughFunds &&
       OUTPUTS(0).R4[Long].get == SELF.R4[Long].get &&
