@@ -131,7 +131,7 @@ class VotingSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChe
         )
       } should have message "Script reduced to false"
 
-      // Should fai; when having sufficient votes (8) with right sorting but duplicate data inputs
+      // Should fail when having sufficient votes (8) with right sorting but duplicate data inputs
       the[Exception] thrownBy {
         TxUtil.createTx(
           inputBoxes = Array(updateBoxIn, dummyFundingBox),
