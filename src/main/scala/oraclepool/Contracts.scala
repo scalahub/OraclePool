@@ -47,12 +47,12 @@ trait Contracts {
        |  // R6: Data point
        |
        |
-       |  val oracleBoxes = CONTEXT.dataInputs.filter{(b:Box) =>
+       |  val oracleBoxes = INPUTS.filter{(b:Box) =>
        |    b.R5[Coll[Byte]].get == SELF.id &&
        |    b.tokens(0)._1 == oracleTokenId
        |  }
        |
-       |  val pubKey = oracleBoxes.map{(b:Box) => proveDlog(b.R4[GroupElement].get)}(OUTPUTS(1).R4[Int].get)
+       |  val pubKey = oracleBoxes.map{(b:Box) => proveDlog(b.R4[GroupElement].get)}(OUTPUTS(1).R5[Int].get) // 1st output will be a datapoint box, and its R4 is locked to public key. Hence we will use R5
        |
        |  val sum = oracleBoxes.fold(0L, { (t:Long, b: Box) => t + b.R6[Long].get })
        |
@@ -62,23 +62,14 @@ trait Contracts {
        |
        |  def getPrevOracleDataPoint(index:Int) = if (index <= 0) firstOracleDataPoint else oracleBoxes(index - 1).R6[Long].get
        |
-       |  val firstOracleBoxIdMinusOne = byteArrayToBigInt(oracleBoxes(0).id) - 1
-       |  
-       |  def getPrevOracleBoxId(index:Int) = if (index <= 0) firstOracleBoxIdMinusOne else byteArrayToBigInt(oracleBoxes(index - 1).id)
-       |
        |  val rewardAndOrderingCheck = oracleBoxes.fold((1, true), {
        |      (t:(Int, Boolean), b:Box) =>
        |         val currOracleDataPoint = b.R6[Long].get
        |         val prevOracleDataPoint = getPrevOracleDataPoint(t._1 - 1)
-       |         val prevOracleBoxId = getPrevOracleBoxId(t._1 - 1) 
-       |         val currOracleBoxId = byteArrayToBigInt(b.id)
-       |         val validOrderById = if (prevOracleDataPoint == currOracleDataPoint) prevOracleBoxId < currOracleBoxId else true 
-       |          
        |         (t._1 + 1, t._2 &&
-       |                    OUTPUTS(t._1).propositionBytes == proveDlog(b.R4[GroupElement].get).propBytes &&
-       |                    OUTPUTS(t._1).value >= $oracleReward &&
-       |                    prevOracleDataPoint >= currOracleDataPoint &&
-       |                    validOrderById
+       |                    OUTPUTS(t._1).propositionBytes == b.propositionBytes &&
+       |                    OUTPUTS(t._1).value >= b.value + $oracleReward &&
+       |                    prevOracleDataPoint >= currOracleDataPoint 
        |         )
        |     }
        |  )
@@ -162,27 +153,29 @@ trait Contracts {
        |  // R4: The address of the oracle (never allowed to change after bootstrap).
        |  // R5: The box id of the latest Live Epoch box.
        |  // R6: The oracle's datapoint.
-       |
+       |  
+       |  // We will NOT have any box in data inputs during commit. So the owner is free to put any value into the registers. 
+       |  // The requirement of R5 having box id is checked in the collect datapoint action
+       |  // Specifically the datapoint collection will check
+       |  //  1. SELF.R5[Coll[Byte]].get == liveEpochBox.id
+       |  //  2. SELF.R6[Long].get is a long value (its sign can be anything, since the consensus enforces correctness)
+       |  
        |  val pubKey = SELF.R4[GroupElement].get
        |
-       |  val poolBox = CONTEXT.dataInputs(0)
-       |
-       |  // Allow datapoint box to contain box id of any box with pool NFT (i.e., either Live Epoch or Epoch Prep boxes)
-       |  // Earlier we additionally required that the box have the live epoch script.
-       |  // In summary:
-       |  //    Earlier: (1st data-input has pool NFT) && (1st data-input has live epoch script) 
-       |  //    Now:     (1st data-input has pool NFT) 
-       |  //
-       |  val validPoolBox = poolBox.tokens(0)._1 == poolNFT 
-       | 
+       |  def isBasicCopy(b:Box) = b.R4[GroupElement].get == pubKey && 
+       |                           b.propositionBytes == SELF.propositionBytes &&
+       |                           b.tokens == SELF.tokens
+       |                            
+       |  def isCollectOut(b:Box) = isBasicCopy(b) && b.value > SELF.value
+       |  
+       |  val isCollect = INPUTS(0).tokens(0)._1 == poolNFT && OUTPUTS.exists(isCollectOut)
+       |   
+       |  val isCommit = proveDlog(pubKey) && OUTPUTS.exists(isBasicCopy) // committer should ensure that in addition to isBasicCopy, the output should be of correct form 
+       |  
        |  sigmaProp(
-       |    OUTPUTS(0).R4[GroupElement].get == pubKey &&
-       |    OUTPUTS(0).R5[Coll[Byte]].get == poolBox.id &&
-       |    OUTPUTS(0).R6[Long].get > 0 &&
-       |    OUTPUTS(0).propositionBytes == SELF.propositionBytes &&
-       |    OUTPUTS(0).tokens == SELF.tokens &&
-       |    validPoolBox
-       |  ) && proveDlog(pubKey)
+       |    isCollect || 
+       |    isCommit // can also extract accumulated Ergs here
+       |  )
        |}
        |""".stripMargin
 
@@ -199,7 +192,7 @@ trait Contracts {
        |    INPUTS(0).tokens(0)._1 == poolNFT &&
        |    OUTPUTS(0).propositionBytes == INPUTS(0).propositionBytes &&
        |    OUTPUTS(0).value >= INPUTS(0).value + totalFunds &&
-       |    OUTPUTS(0).tokens(0)._1 == poolNFT
+       |    OUTPUTS(0).tokens == INPUTS(0).tokens
        |  )
        |}
        |""".stripMargin
@@ -208,82 +201,44 @@ trait Contracts {
 
   val updateScript =
     s"""{ // This box:
-       |  // R4 the "control value" (such as the hash of a script of some other box)
-       |  //
-       |  // ballot boxes (data Inputs)
+       |  // Registers empty 
+       |  // 
+       |  // ballot boxes (Inputs)
        |  // R4 the new control value
        |  // R5 the box id of this box
        |
-       |  val isUpdate = INPUTS(0).tokens(0)._1 == poolNFT
-       |  val updateBoxIn = if (isUpdate) INPUTS(1) else INPUTS(0)
-       |  val updateBoxOut = if (isUpdate) OUTPUTS(1) else OUTPUTS(0)
-       |  val validIn = SELF.id == updateBoxIn.id
+       |  // collect and update in one step now!
+       |  val poolBoxIn = INPUTS(0) // pool is 1st input
+       |  
+       |  val poolBoxOut = OUTPUTS(0) // pool is the 1st output
+       |  val updateBoxOut = OUTPUTS(1)
+       |  
+       |  val poolBoxOutHash = blake2b256(poolBoxOut.propositionBytes)
+       |  
+       |  val validPoolIn = poolBoxIn.tokens(0)._1 == poolNFT
+       |  val validPoolOut = poolBoxIn.tokens == poolBoxOut.tokens && 
+       |                     poolBoxIn.R4[Long].get == poolBoxOut.R4[Long].get &&
+       |                     poolBoxIn.R5[Int].get == poolBoxOut.R5[Int].get &&
+       |                     poolBoxIn.value == poolBoxOut.value
        |
-       |  val voteSuccessPath = {
-       |    val newValue = updateBoxOut.R4[Coll[Byte]].get
-       |    val oldValue = updateBoxIn.R4[Coll[Byte]].get
+       |  
+       |  val validUpdateIn = SELF.id == INPUTS(1).id // this is 2nd input
+       |  
+       |  val validUpdateOut = SELF.tokens == updateBoxOut.tokens && 
+       |                       SELF.propositionBytes == updateBoxOut.propositionBytes &&
+       |                       SELF.value >= updateBoxOut.value
        |
-       |    val validOut = updateBoxOut.propositionBytes == updateBoxIn.propositionBytes &&
-       |                   updateBoxOut.value >= $minStorageRent &&
-       |                   updateBoxOut.tokens == updateBoxIn.tokens &&
-       |                   newValue != oldValue
+       |  def validBallotSubmissionBox(b:Box) = b.tokens(0)._1 == ballotTokenId &&
+       |                                        b.R4[Coll[Byte]].get == poolBoxOutHash && // ensure that vote is for the poolBoxOutHash
+       |                                        b.R5[Coll[Byte]].get == SELF.id  // ensure that vote corresponds to this update only
+       |  
+       |  val ballotsIn = INPUTS.filter(validBallotSubmissionBox)
+       |  
+       |  val ballotCount = ballotsIn.fold(0L, { (accum: Long, box: Box) =>  accum + box.tokens(0)._2 })
+       |  
+       |  val voteAccepted = ballotCount >= $minVotes
        |
-       |    def validBallotSubmissionBox(b:Box) = b.tokens(0)._1 == ballotTokenId &&
-       |                                          b.R4[Coll[Byte]].get == newValue && // ensure that vote is for the newValue
-       |                                          b.R5[Coll[Byte]].get == SELF.id  // ensure that vote counts only once
-       |
-       |    val ballots = CONTEXT.dataInputs.filter(validBallotSubmissionBox)
-       |    
-       |    val preBigInt = byteArrayToBigInt(ballots(0).id) - 1
-       |    
-       |    val ballotCount = ballots.fold(0L, { (accum: Long, box: Box) =>  accum + box.tokens(0)._2 })
-       |
-       |    val s = ballots.fold((preBigInt, true), { (t: (BigInt, Boolean), box: Box) =>
-       |         val oldBigInt = t._1
-       |         val valid = t._2
-       |         val currBigInt = byteArrayToBigInt(box.id)
-       |         
-       |         (currBigInt, valid && oldBigInt < currBigInt)
-       |      }
-       |    )
-       |
-       |    val uniqueDataInputs = s._2 
-       |    
-       |    val voteAccepted = ballotCount >= $minVotes
-       |
-       |    validOut && voteAccepted && uniqueDataInputs
-       |  }
-       |
-       |  val updatePath = {
-       |    val epochPrepBoxIn = INPUTS(0)
-       |    val epochPrepBoxOut = OUTPUTS(0)
-       |
-       |    val storedNewHash = SELF.R4[Coll[Byte]].get
-       |    val epochPrepBoxOutHash = blake2b256(epochPrepBoxOut.propositionBytes)
-       |
-       |    val validPoolBox = epochPrepBoxIn.tokens(0)._1 == poolNFT && // epochPrep box is first input
-       |                       epochPrepBoxIn.tokens == epochPrepBoxOut.tokens &&
-       |                       storedNewHash == epochPrepBoxOutHash &&
-       |                       epochPrepBoxIn.propositionBytes != epochPrepBoxOut.propositionBytes &&
-       |                       epochPrepBoxIn.R4[Long].get == epochPrepBoxOut.R4[Long].get &&
-       |                       epochPrepBoxIn.R5[Int].get == epochPrepBoxOut.R5[Int].get &&
-       |                       epochPrepBoxIn.value == epochPrepBoxOut.value
-       |
-       |    val validUpdateBox = updateBoxIn.R4[Coll[Byte]].get == updateBoxOut.R4[Coll[Byte]].get &&
-       |                         updateBoxIn.propositionBytes == updateBoxOut.propositionBytes &&
-       |                         updateBoxIn.tokens == updateBoxOut.tokens &&
-       |                         updateBoxIn.value == updateBoxOut.value
-       |
-       |    validPoolBox &&
-       |    validUpdateBox 
-       |  }
-       |
-       |  sigmaProp(
-       |    validIn && (
-       |      voteSuccessPath ||
-       |      updatePath
-       |    )
-       |  )
+       |  sigmaProp(validPoolIn && validPoolOut && validUpdateIn && validUpdateOut && voteAccepted)
        |}
        |""".stripMargin
 
