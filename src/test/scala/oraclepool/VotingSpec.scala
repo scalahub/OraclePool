@@ -117,7 +117,7 @@ class VotingSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChe
         false
       )
 
-      // Should fai; when having sufficient votes (8) but wrong sorting of data inputs
+      // Should fail when having sufficient votes (8) but wrong sorting of data inputs
       the[Exception] thrownBy {
         TxUtil.createTx(
           inputBoxes = Array(updateBoxIn, dummyFundingBox),
