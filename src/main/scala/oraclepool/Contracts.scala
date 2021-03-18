@@ -68,6 +68,7 @@ trait Contracts {
        |         val prevOracleDataPoint = getPrevOracleDataPoint(t._1 - 1)
        |         (t._1 + 1, t._2 &&
        |                    OUTPUTS(t._1).propositionBytes == b.propositionBytes &&
+       |                    OUTPUTS(t._1).R4[GroupElement].get == b.R4[GroupElement].get &&
        |                    OUTPUTS(t._1).value >= b.value + $oracleReward &&
        |                    prevOracleDataPoint >= currOracleDataPoint 
        |         )
