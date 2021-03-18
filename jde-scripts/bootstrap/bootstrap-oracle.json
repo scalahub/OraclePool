@@ -3,17 +3,17 @@
     {
       "name": "myAddress",
       "type": "Address",
-      "value": "9faWv1ZgLgB34F5tam5WnDNzeZAyDQPS9vWtp4mFcxRTW4RkDwQ"
+      "value": "9hz1B19M44TNpmVe8MS4xvXyycehh5uP5aCfj4a6iAowj88hkd2"
     },
     {
       "name": "participantAddress",
       "type": "Address",
-      "value": "9gLGZ9AtJ6AFHdpkH6pnJ2LNx98STt4E23ZrkH2T1pFysTCCbjh"
+      "value": "9eh9WDsRAsujyFx4x7YeSoxrLCqmhuQihDwgsWVqEuXte7QJRCU"
     },
     {
       "name": "participantPubKey",
       "type": "GroupElement",
-      "value": "02eee2fe4a7e75e91661d7a8453d82519453c06d7e412d6a927526fe5cf1d9301a"
+      "value": "0216e6cca588bed47a7630cba9d662a4be8a2e1991a45ed54ba64093e03dcd9013"
     },
     {
       "name": "datapointAddress",
@@ -23,7 +23,7 @@
     {
       "name": "participantToken",
       "type": "CollByte",
-      "value": "5579de48d16e54ddb34df789d418e1f10c119e15a824ea32dc21696c067f9fbe"
+      "value": "b5e02eea9d3e3a604897a0ab05eb61c15c37fdecff02c6109dc0fe90a1918760"
     },
     {
       "name": "bootstrapNanoErgs",

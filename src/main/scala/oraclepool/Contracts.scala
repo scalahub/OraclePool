@@ -62,15 +62,23 @@ trait Contracts {
        |
        |  def getPrevOracleDataPoint(index:Int) = if (index <= 0) firstOracleDataPoint else oracleBoxes(index - 1).R6[Long].get
        |
+       |  val firstOracleBoxIdMinusOne = byteArrayToBigInt(oracleBoxes(0).id) - 1
+       |  
+       |  def getPrevOracleBoxId(index:Int) = if (index <= 0) firstOracleBoxIdMinusOne else byteArrayToBigInt(oracleBoxes(index - 1).id)
+       |
        |  val rewardAndOrderingCheck = oracleBoxes.fold((1, true), {
        |      (t:(Int, Boolean), b:Box) =>
        |         val currOracleDataPoint = b.R6[Long].get
        |         val prevOracleDataPoint = getPrevOracleDataPoint(t._1 - 1)
-       |
+       |         val prevOracleBoxId = getPrevOracleBoxId(t._1 - 1) 
+       |         val currOracleBoxId = byteArrayToBigInt(b.id)
+       |         val validOrderById = if (prevOracleDataPoint == currOracleDataPoint) prevOracleBoxId < currOracleBoxId else true 
+       |          
        |         (t._1 + 1, t._2 &&
        |                    OUTPUTS(t._1).propositionBytes == proveDlog(b.R4[GroupElement].get).propBytes &&
        |                    OUTPUTS(t._1).value >= $oracleReward &&
-       |                    prevOracleDataPoint >= currOracleDataPoint
+       |                    prevOracleDataPoint >= currOracleDataPoint &&
+       |                    validOrderById
        |         )
        |     }
        |  )
@@ -225,12 +233,25 @@ trait Contracts {
        |                                          b.R5[Coll[Byte]].get == SELF.id  // ensure that vote counts only once
        |
        |    val ballots = CONTEXT.dataInputs.filter(validBallotSubmissionBox)
+       |    
+       |    val preBigInt = byteArrayToBigInt(ballots(0).id) - 1
+       |    
+       |    val ballotCount = ballots.fold(0L, { (accum: Long, box: Box) =>  accum + box.tokens(0)._2 })
        |
-       |    val ballotCount = ballots.fold(0L, { (accum: Long, box: Box) => accum + box.tokens(0)._2 })
+       |    val s = ballots.fold((preBigInt, true), { (t: (BigInt, Boolean), box: Box) =>
+       |         val oldBigInt = t._1
+       |         val valid = t._2
+       |         val currBigInt = byteArrayToBigInt(box.id)
+       |         
+       |         (currBigInt, valid && oldBigInt < currBigInt)
+       |      }
+       |    )
        |
+       |    val uniqueDataInputs = s._2 
+       |    
        |    val voteAccepted = ballotCount >= $minVotes
        |
-       |    validOut && voteAccepted
+       |    validOut && voteAccepted && uniqueDataInputs
        |  }
        |
        |  val updatePath = {

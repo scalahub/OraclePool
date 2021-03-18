@@ -65,12 +65,12 @@ class VotingSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChe
         tokens = Array(epochPool.updateNFT -> 1)
       )
 
-      // ballot with 2 votes
+      // ballot with 3 votes
       val ballot1 = ctx
         .newTxBuilder()
         .outBoxBuilder
         .value(epochPool.minStorageRent)
-        .tokens(new ErgoToken(epochPool.ballotToken, 2))
+        .tokens(new ErgoToken(epochPool.ballotToken, 3))
         .contract(ctx.compileContract(ConstantsBuilder.empty(), dummyScript))
         .registers(
           updatedEpochPrepScriptHash.getErgoValue,
@@ -79,12 +79,12 @@ class VotingSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChe
         .build()
         .convertToInputWith(dummyTxId, 0)
 
-      // ballot with 3 votes
+      // ballot with 4 votes
       val ballot2 = ctx
         .newTxBuilder()
         .outBoxBuilder
         .value(epochPool.minStorageRent)
-        .tokens(new ErgoToken(epochPool.ballotToken, 3))
+        .tokens(new ErgoToken(epochPool.ballotToken, 4))
         .contract(ctx.compileContract(ConstantsBuilder.empty(), dummyScript))
         .registers(updatedEpochPrepScriptHash.getErgoValue, updateBoxInBoxId.getErgoValue)
         .build()
@@ -101,10 +101,14 @@ class VotingSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChe
         .build()
         .convertToInputWith(dummyTxId, 2)
 
-      // Should succeed when having sufficient votes (6)
+      def sortByBoxId(boxes: Array[InputBox]) = {
+        boxes.map(box => BigInt(box.getId.getBytes) -> box).sortBy(_._1).map(_._2)
+      }
+
+      // Should succeed when having sufficient votes (8)
       TxUtil.createTx(
         inputBoxes = Array(updateBoxIn, dummyFundingBox),
-        dataInputs = Array(ballot1, ballot2, ballot3),
+        dataInputs = sortByBoxId(Array(ballot1, ballot2, ballot3)),
         boxesToCreate = Array(updateBoxOut),
         fee,
         changeAddress,
@@ -113,21 +117,47 @@ class VotingSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChe
         false
       )
 
-      // Should fail when having insufficient votes (5)
-      assert(
-        Try(
-          TxUtil.createTx(
-            inputBoxes = Array(updateBoxIn, dummyFundingBox),
-            dataInputs = Array(ballot1, ballot2),
-            boxesToCreate = Array(updateBoxOut),
-            fee,
-            changeAddress,
-            Array[String](),
-            Array[DhtData](),
-            false
-          )
-        ).isFailure
-      )
+      // Should fai; when having sufficient votes (8) but wrong sorting of data inputs
+      the[Exception] thrownBy {
+        TxUtil.createTx(
+          inputBoxes = Array(updateBoxIn, dummyFundingBox),
+          dataInputs = sortByBoxId(Array(ballot1, ballot2, ballot3)).reverse,
+          boxesToCreate = Array(updateBoxOut),
+          fee,
+          changeAddress,
+          Array[String](),
+          Array[DhtData](),
+          false
+        )
+      } should have message "Script reduced to false"
+
+      // Should fai; when having sufficient votes (8) with right sorting but duplicate data inputs
+      the[Exception] thrownBy {
+        TxUtil.createTx(
+          inputBoxes = Array(updateBoxIn, dummyFundingBox),
+          dataInputs = sortByBoxId(Array(ballot1, ballot2, ballot2)),
+          boxesToCreate = Array(updateBoxOut),
+          fee,
+          changeAddress,
+          Array[String](),
+          Array[DhtData](),
+          false
+        )
+      } should have message "Script reduced to false"
+
+      // Should fail when having insufficient votes (7)
+      the[Exception] thrownBy {
+        TxUtil.createTx(
+          inputBoxes = Array(updateBoxIn, dummyFundingBox),
+          dataInputs = sortByBoxId(Array(ballot1, ballot2)),
+          boxesToCreate = Array(updateBoxOut),
+          fee,
+          changeAddress,
+          Array[String](),
+          Array[DhtData](),
+          false
+        )
+      } should have message "Script reduced to false"
 
       // Should fail when old and new hashes are same
       val invalidUpdateBoxIn = ctx
@@ -140,20 +170,18 @@ class VotingSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChe
         .build()
         .convertToInputWith(dummyTxId, 0)
 
-      assert(
-        Try(
-          TxUtil.createTx(
-            inputBoxes = Array(invalidUpdateBoxIn, dummyFundingBox),
-            dataInputs = Array(ballot1, ballot2, ballot3),
-            boxesToCreate = Array(updateBoxOut),
-            fee,
-            changeAddress,
-            Array[String](),
-            Array[DhtData](),
-            false
-          )
-        ).isFailure
-      )
+      the[Exception] thrownBy {
+        TxUtil.createTx(
+          inputBoxes = Array(invalidUpdateBoxIn, dummyFundingBox),
+          dataInputs = sortByBoxId(Array(ballot1, ballot2, ballot3)),
+          boxesToCreate = Array(updateBoxOut),
+          fee,
+          changeAddress,
+          Array[String](),
+          Array[DhtData](),
+          false
+        )
+      } should have message "Script reduced to false"
     }
   }
 }

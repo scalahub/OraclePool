@@ -146,10 +146,10 @@ class OraclePoolSpec extends PropSpec with Matchers with ScalaCheckDrivenPropert
       type PrivateKey = BigInt
 
       // dataPoints to commit
-      val r6dataPoint0: DataPoint = KioskLong(100000)
+      val r6dataPoint0: DataPoint = KioskLong(100009)
       val r6dataPoint1: DataPoint = KioskLong(100102)
-      val r6dataPoint2: DataPoint = KioskLong(100103)
-      val r6dataPoint3: DataPoint = KioskLong(100105)
+      val r6dataPoint2: DataPoint = KioskLong(100102) // repeated datapoint
+      val r6dataPoint3: DataPoint = KioskLong(100101)
       val r6dataPoint4: DataPoint = KioskLong(100107)
 
       val dataPointInfo1 = Array(
@@ -182,18 +182,34 @@ class OraclePoolSpec extends PropSpec with Matchers with ScalaCheckDrivenPropert
         (oracleBox4ToSpend, r4oracle4, r6dataPoint4, pool.addresses(4), pool.oracle4PrivateKey)
       )
 
+      val dataPointInfoRepeated = Array(
+        (oracleBox0ToSpend, r4oracle0, r6dataPoint0, pool.addresses(0), pool.oracle0PrivateKey),
+        (oracleBox1ToSpend, r4oracle1, r6dataPoint1, pool.addresses(1), pool.oracle1PrivateKey),
+        (oracleBox2ToSpend, r4oracle2, r6dataPoint2, pool.addresses(2), pool.oracle2PrivateKey),
+        (oracleBox3ToSpend, r4oracle3, r6dataPoint3, pool.addresses(3), pool.oracle3PrivateKey),
+        (oracleBox4ToSpend, r4oracle3, r6dataPoint3, pool.addresses(3), pool.oracle3PrivateKey)
+      )
+
       assert(liveEpochBox.getErgoTree.bytes.encodeHex == pool.liveEpochErgoTree.bytes.encodeHex)
 
       // Step 3:
       // commit and collect data points
       // The final outcome is a Epoch Prep box
 
-      the[Exception] thrownBy commitAndCollect(dataPointInfo1) should have message "Script reduced to false" // min data points is 4
-//      commitAndCollect(dataPointInfo1)
-//      commitAndCollect(dataPointInfo2)
-//      commitAndCollect(dataPointInfo3)
-      commitAndCollect(dataPointInfo4)
-      commitAndCollect(dataPointInfo5)
+      var sortCorrectly = true
+
+      the[Exception] thrownBy commitAndCollect(dataPointInfo1) should have message "Script reduced to false" // min data points is 3
+      the[Exception] thrownBy commitAndCollect(dataPointInfo2) should have message "Script reduced to false" // min data points is 3
+      noException should be thrownBy commitAndCollect(dataPointInfo3)
+      noException should be thrownBy commitAndCollect(dataPointInfo4)
+      noException should be thrownBy commitAndCollect(dataPointInfo5)
+      the[Exception] thrownBy commitAndCollect(dataPointInfoRepeated) should have message "Script reduced to false" // datapoint cannot be repeated
+
+      sortCorrectly = false // set flag to sort data inputs incorrectly
+
+      the[Exception] thrownBy commitAndCollect(dataPointInfo3) should have message "Script reduced to false"
+      the[Exception] thrownBy commitAndCollect(dataPointInfo4) should have message "Script reduced to false"
+      the[Exception] thrownBy commitAndCollect(dataPointInfo5) should have message "Script reduced to false"
 
       def commitDataPoint(dataPointBox: DataPointBox, r4dataPoint: KioskGroupElement, r6dataPoint: DataPoint, oraclePrivateKey: PrivateKey) = {
         val commitBoxToCreate = KioskBox(
@@ -226,7 +242,11 @@ class OraclePoolSpec extends PropSpec with Matchers with ScalaCheckDrivenPropert
           (dataPointBoxes zip dataPoints) zip (addresses zip privateKeys) map {
             case ((dataPointBox, dataPoint), (address, optPrivateKey)) =>
               (dataPointBox, dataPoint, address, optPrivateKey)
-          } sortBy (-_._2.value)
+          } sortWith {
+            case ((_, leftDatapoint, _, _), (_, rightDatapoint, _, _)) if leftDatapoint.value != rightDatapoint.value && sortCorrectly => leftDatapoint.value > rightDatapoint.value
+            case ((leftBox, _, _, _), (rightBox, _, _, _)) if sortCorrectly                                                            => BigInt(leftBox.getId.getBytes) < BigInt(rightBox.getId.getBytes)
+            case _                                                                                                                     => true // return true irrespective of condition
+          }
 
         val dataPointBoxesSorted: Array[DataPointBox] = tuples.map(_._1)
 
