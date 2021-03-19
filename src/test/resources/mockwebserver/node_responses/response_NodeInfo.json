@@ -24,7 +24,7 @@
     "storageFeeFactor": 1250000,
     "minValuePerByte": 360,
     "maxBlockSize": 524288,
-    "maxBlockCost": 1000000,
+    "maxBlockCost": 5062531,
     "blockVersion": 1,
     "tokenAccessCost": 100,
     "inputCost": 2000,
