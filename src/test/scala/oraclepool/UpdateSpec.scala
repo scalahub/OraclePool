@@ -38,7 +38,7 @@ class UpdateSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChe
         override def buffer = 4 // blocks               CHANGED!!
       }
 
-//      require(currentPool.epochPrepAddress != newPool.epochPrepAddress)
+      require(currentPool.epochPrepAddress != newPool.epochPrepAddress)
       require(currentPool.liveEpochAddress != newPool.liveEpochAddress)
 
       require(currentPool.poolNFT == newPool.poolNFT)
