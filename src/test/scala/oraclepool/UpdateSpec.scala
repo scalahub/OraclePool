@@ -106,7 +106,7 @@ class UpdateSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChe
         .build()
         .convertToInputWith(dummyTxId, 0)
 
-      // for for update
+      // value to vote for; hash of new pool box script
       val valueVotedFor = KioskCollByte(Blake2b256(newPool.epochPrepErgoTree.bytes))
 
       val ballot0BoxToCreate = Voters.ballot0Box.copy(
