@@ -233,7 +233,7 @@ class UpdateSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChe
         TxUtil.createTx(
           inputBoxes = Array(invalidUpdateBoxIn, poolBoxIn, ballot0, ballot1, ballot2, dummyFundingBox),
           dataInputs = Array(),
-          boxesToCreate = Array(updateBoxOut, poolBoxOut.copy(address = currentPool.epochPrepAddress), ballot0BoxToCreate, ballot1BoxToCreate, ballot2BoxToCreate),
+          boxesToCreate = Array(updateBoxOut, poolBoxOut, ballot0BoxToCreate, ballot1BoxToCreate, ballot2BoxToCreate),
           fee,
           changeAddress,
           proveDlogSecrets = Array[String](),
