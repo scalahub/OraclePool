@@ -9,6 +9,8 @@ import org.scalatest.{Matchers, PropSpec}
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import scorex.crypto.hash.Blake2b256
 
+import java.nio.ByteBuffer
+
 class OraclePoolSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChecks with HttpClientTesting {
   val ergoClient = createMockedErgoClient(MockData(Nil, Nil))
 
@@ -244,7 +246,7 @@ class OraclePoolSpec extends PropSpec with Matchers with ScalaCheckDrivenPropert
               (dataPointBox, dataPoint, address, optPrivateKey)
           } sortWith {
             case ((_, leftDatapoint, _, _), (_, rightDatapoint, _, _)) if leftDatapoint.value != rightDatapoint.value && sortCorrectly => leftDatapoint.value > rightDatapoint.value
-            case ((leftBox, _, _, _), (rightBox, _, _, _)) if sortCorrectly                                                            => BigInt(leftBox.getId.getBytes) < BigInt(rightBox.getId.getBytes)
+            case ((leftBox, _, _, _), (rightBox, _, _, _)) if sortCorrectly                                                            => BigInt(leftBox.getId.getBytes) > BigInt(rightBox.getId.getBytes)
             case _                                                                                                                     => true // return true irrespective of condition
           }
 

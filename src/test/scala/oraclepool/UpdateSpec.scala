@@ -255,7 +255,6 @@ class UpdateSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChe
           false
         )
       } should have message "Script reduced to false"
-
     }
   }
 }
