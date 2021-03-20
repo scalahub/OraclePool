@@ -2,15 +2,13 @@ package oraclepool
 
 import kiosk.ErgoUtil
 import kiosk.encoding.ScalaErgoConverters
-import kiosk.encoding.ScalaErgoConverters.{getAddressFromErgoTree, getStringFromAddress, stringToGroupElement}
+import kiosk.encoding.ScalaErgoConverters.stringToGroupElement
 import kiosk.ergo._
 import kiosk.tx.TxUtil
 import org.ergoplatform.appkit._
 import org.scalatest.{Matchers, PropSpec}
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import scorex.crypto.hash.Blake2b256
-import sigmastate.lang.exceptions.InterpreterException
-import special.sigma.GroupElement
 
 class UpdateSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChecks with HttpClientTesting {
   /*

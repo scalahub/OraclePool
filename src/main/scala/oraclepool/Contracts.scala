@@ -62,25 +62,15 @@ trait Contracts {
        |
        |  def getPrevOracleDataPoint(index:Int) = if (index <= 0) firstOracleDataPoint else oracleBoxes(index - 1).R6[Long].get
        |
-       |  def toLong(array: Coll[Byte]) = byteArrayToLong(array.slice(0, 8))
-       |
-       |  val firstOracleBoxIdPlusOne = toLong(oracleBoxes(0).id) + 1
-       |  
-       |  def getPrevOracleBoxId(index:Int) = if (index <= 0) firstOracleBoxIdPlusOne else toLong(oracleBoxes(index - 1).id)
-       |
        |  val rewardAndOrderingCheck = oracleBoxes.fold((1, true), {
        |      (t:(Int, Boolean), b:Box) =>
        |         val currOracleDataPoint = b.R6[Long].get
        |         val prevOracleDataPoint = getPrevOracleDataPoint(t._1 - 1)
-       |         val prevOracleBoxId = getPrevOracleBoxId(t._1 - 1) 
-       |         val currOracleBoxId = toLong(b.id)
-       |         val validOrderById = if (prevOracleDataPoint == currOracleDataPoint) prevOracleBoxId > currOracleBoxId else true 
        |          
        |         (t._1 + 1, t._2 &&
        |                    OUTPUTS(t._1).propositionBytes == proveDlog(b.R4[GroupElement].get).propBytes &&
        |                    OUTPUTS(t._1).value >= $oracleReward &&
-       |                    prevOracleDataPoint >= currOracleDataPoint &&
-       |                    validOrderById
+       |                    prevOracleDataPoint >= currOracleDataPoint 
        |         )
        |     }
        |  )
