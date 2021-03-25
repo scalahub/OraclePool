@@ -1,7 +1,8 @@
-package oraclepool
+package oraclepool.v1a
 
 import kiosk.ergo._
 import kiosk.tx.TxUtil
+import oraclepool.v1a.OraclePool
 import org.ergoplatform.appkit._
 import org.ergoplatform.appkit.impl.ErgoTreeContract
 import org.scalatest.{Matchers, PropSpec}

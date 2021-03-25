@@ -1,13 +1,12 @@
-package oraclepool
+package oraclepool.v1a
 
 import kiosk.encoding.ScalaErgoConverters
-import kiosk.ergo.KioskType
+import kiosk.ergo.{KioskType, _}
 import kiosk.script.ScriptUtil
 import scorex.crypto.hash.Blake2b256
 import sigmastate.Values
 
 import scala.collection.mutable.{Map => MMap}
-import kiosk.ergo._
 
 trait Contracts {
   def livePeriod: Int // blocks
@@ -292,4 +291,7 @@ trait Contracts {
   val poolDepositAddress: String = getStringFromAddress(getAddressFromErgoTree(poolDepositErgoTree))
   val updateAddress: String = getStringFromAddress(getAddressFromErgoTree(updateErgoTree))
   val ballotAddress: String = getStringFromAddress(getAddressFromErgoTree(ballotErgoTree))
+
+  val epochPrepScriptHash = Blake2b256(epochPrepErgoTree.bytes).encodeHex
+  val liveEpochScriptHash = Blake2b256(liveEpochErgoTree.bytes).encodeHex
 }

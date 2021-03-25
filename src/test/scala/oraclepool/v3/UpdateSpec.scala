@@ -1,10 +1,11 @@
-package oraclepool
+package oraclepool.v3
 
 import kiosk.ErgoUtil
 import kiosk.encoding.ScalaErgoConverters
 import kiosk.encoding.ScalaErgoConverters.stringToGroupElement
 import kiosk.ergo._
 import kiosk.tx.TxUtil
+import oraclepool.v3.OraclePool
 import org.ergoplatform.appkit._
 import org.scalatest.{Matchers, PropSpec}
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
@@ -80,7 +81,7 @@ class UpdateSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChe
         val ballot2Box = KioskBox(currentPool.ballotAddress, value = 200000000, registers = Array(r4voter2), tokens = Array((currentPool.ballotToken, 1L)))
       }
 
-      // old update box
+      // current update box
       val updateOutBox = ctx
         .newTxBuilder()
         .outBoxBuilder
@@ -91,7 +92,7 @@ class UpdateSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChe
 
       val updateBoxIn = updateOutBox.convertToInputWith(dummyTxId, 0)
 
-      // old pool box
+      // current pool box
       val currentEpochPrepContract = ctx.newContract(ScalaErgoConverters.getAddressFromString(currentPool.epochPrepAddress).script)
 
       val poolBoxIn = ctx
