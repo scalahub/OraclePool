@@ -1,3 +1,4 @@
-## Difference from v1
+# Oracle pool (v1a) (test deployment)
 
-- Different token/NFT ids
+## Difference from v1
+- Everything is same as v1 except that it uses different token ids and NFT ids
