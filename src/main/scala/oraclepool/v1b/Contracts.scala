@@ -1,4 +1,4 @@
-package oraclepool.v1a
+package oraclepool.v1b
 
 import kiosk.encoding.ScalaErgoConverters
 import kiosk.ergo.{KioskType, _}
@@ -206,23 +206,20 @@ trait Contracts {
        |  // R6 the box id of the update box [Coll[Byte]]
        |  // R7 the value voted for [Coll[Byte]]
        |  
-       |  val pubKey = SELF.R4[GroupElement].get
+       |  val index = getVar[Short](0).get
        |  
-       |  val index = INPUTS.indexOf(SELF, 0)
+       |  val pubKey = SELF.R4[GroupElement].get
        |  
        |  val output = OUTPUTS(index)
        |  
        |  val isBasicCopy = output.R4[GroupElement].get == pubKey && 
        |                    output.propositionBytes == SELF.propositionBytes &&
        |                    output.tokens == SELF.tokens && 
-       |                    output.value >= $minStorageRent
+       |                    output.value == SELF.value
        |  
        |  sigmaProp(
        |    isBasicCopy && (
-       |      proveDlog(pubKey) || (
-       |         INPUTS(0).tokens(0)._1 == updateNFT && 
-       |         output.value >= SELF.value
-       |      )
+       |      proveDlog(pubKey) || INPUTS(0).tokens(0)._1 == updateNFT && output.R5[Int].isDefined == false
        |    )
        |  )
        |}
@@ -259,18 +256,13 @@ trait Contracts {
        |                       SELF.propositionBytes == updateBoxOut.propositionBytes &&
        |                       SELF.value >= updateBoxOut.value
        |
-       |  def isValidBallot(b:Box) = {
-       |    b.tokens.size > 0 && 
-       |    b.tokens(0)._1 == ballotTokenId &&
-       |    b.R6[Coll[Byte]].get == SELF.id && // ensure vote corresponds to this box ****
-       |    b.R7[Coll[Byte]].get == poolBoxOutHash // check value voted for
-       |  }
-       |  
-       |  val ballotBoxes = INPUTS.filter(isValidBallot)
-       |  
-       |  val votesCount = ballotBoxes.fold(0L, {(accum: Long, b: Box) => accum + b.tokens(0)._2})
-       |  
-       |  sigmaProp(validPoolIn && validPoolOut && validUpdateIn && validUpdateOut && votesCount >= $minVotes)
+       |  def isBallot(b: Box) = b.tokens.size > 0 && 
+       |                         b.tokens(0)._1 == ballotTokenId &&  
+       |                         b.R6[Coll[Byte]].get == SELF.id && // ensure vote corresponds to this box ****
+       |                         b.R7[Coll[Byte]].get == poolBoxOutHash // check value voted for
+       |         
+       |  val ballots = INPUTS.filter(isBallot)
+       |  sigmaProp(validPoolIn && validPoolOut && validUpdateIn && validUpdateOut && ballots.size >= $minVotes)
        |}
        |""".stripMargin
 

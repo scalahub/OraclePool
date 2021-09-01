@@ -1,4 +1,4 @@
-package oraclepool.v2
+package oraclepool.v1c
 
 trait OraclePool extends Contracts {
   lazy val minBoxValue = 1000000 // min value to remain AFTER paying rewards. For min value to keep BEFORE rewards, see minPoolBoxValue

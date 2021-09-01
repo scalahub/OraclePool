@@ -1,11 +1,11 @@
-package oraclepool.v3
+package oraclepool.v1c
 
 import kiosk.ErgoUtil
 import kiosk.encoding.ScalaErgoConverters
 import kiosk.encoding.ScalaErgoConverters.stringToGroupElement
 import kiosk.ergo._
 import kiosk.tx.TxUtil
-import oraclepool.v3.OraclePool
+import oraclepool.v1c.OraclePool
 import org.ergoplatform.appkit._
 import org.scalatest.{Matchers, PropSpec}
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks

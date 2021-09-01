@@ -1,4 +1,4 @@
-package oraclepool.v1a
+package oraclepool.v1b
 
 trait OraclePool extends Contracts {
   lazy val minBoxValue = 1000000 // min value to remain AFTER paying rewards. For min value to keep BEFORE rewards, see minPoolBoxValue
@@ -12,10 +12,10 @@ trait OraclePool extends Contracts {
   lazy val minVotes = 8 // for update
   lazy val minStorageRent = 10000000L
 
-  lazy val poolNFT = "e0630fa2366d8d0682cc1dbc114ad57f023bc1f2948999079d0cd05fcbc4db01" 
-  lazy val oracleToken = "cd00a6c593b562b7e7f485f2734d39a42111dd03c9f48eb82d6326661ad70978" 
-  lazy val updateNFT = "dd26438230986cfe7305ad958451b69e55ad5ac37c8a355bfb08d810edd7a20f" 
-  lazy val ballotToken = "b662db51cf2dc39f110a021c2a31c74f0a1a18ffffbf73e8a051a7b8c0f09ebc" 
+  lazy val poolNFT = "011d3364de07e5a26f0c4eef0852cddb387039a921b7154ef3cab22c6eda887f" // 1 token issued
+  lazy val oracleToken = "8c27dd9d8a35aac1e3167d58858c0a8b4059b277da790552e37eba22df9b9035" // 15 tokens issued
+  lazy val updateNFT = "720978c041239e7d6eb249d801f380557126f6324e12c5ba9172d820be2e1dde" // 1 token issued
+  lazy val ballotToken = "053fefab5477138b760bc7ae666c3e2b324d5ae937a13605cb766ec5222e5518" // 15 tokens issued
 
   override def minPoolBoxValue: Long = oracleReward * (maxNumOracles + 1) + minBoxValue // min value allowed in live epoch box
 }

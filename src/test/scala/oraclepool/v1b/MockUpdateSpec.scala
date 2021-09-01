@@ -1,11 +1,11 @@
-package oraclepool.v2
+package oraclepool.v1b
 
 import kiosk.ErgoUtil
 import kiosk.encoding.ScalaErgoConverters
 import kiosk.encoding.ScalaErgoConverters.stringToGroupElement
 import kiosk.ergo.{KioskLong, _}
 import kiosk.tx.TxUtil
-import oraclepool.v2.OraclePool
+import oraclepool.v1b.OraclePool
 import org.ergoplatform.appkit.{BlockchainContext, ConstantsBuilder, ContextVar, ErgoToken, ErgoValue, FileMockedErgoClient, HttpClientTesting, InputBox}
 import org.scalatest.{Matchers, PropSpec}
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks

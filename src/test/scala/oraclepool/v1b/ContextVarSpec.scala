@@ -1,4 +1,4 @@
-package oraclepool.v2
+package oraclepool.v1b
 
 import org.ergoplatform.appkit.{Address, BlockchainContext, ConstantsBuilder, ContextVar, HttpClientTesting, InputBox, NetworkType}
 import org.scalatest.{Matchers, PropSpec}

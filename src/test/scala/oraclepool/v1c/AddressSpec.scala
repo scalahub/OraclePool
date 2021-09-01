@@ -1,7 +1,7 @@
-package oraclepool.v3
+package oraclepool.v1c
 
 import kiosk.ergo._
-import oraclepool.v3.OraclePool
+import oraclepool.v1c.OraclePool
 import org.scalatest.{Matchers, PropSpec}
 import scorex.crypto.hash.Blake2b256
 

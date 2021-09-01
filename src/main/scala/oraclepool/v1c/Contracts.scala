@@ -1,4 +1,4 @@
-package oraclepool.v2
+package oraclepool.v1c
 
 import kiosk.encoding.ScalaErgoConverters
 import kiosk.ergo.{KioskType, _}
@@ -19,9 +19,12 @@ trait Contracts {
 
   def poolNFT: String
   def oracleToken: String
+
   def updateNFT: String
   def ballotToken: String
   def minVotes: Int
+  def INF = Long.MaxValue
+  def votingBuffer: Int = 1
 
   def oracleReward: Long // Nano ergs. One reward per data point to be paid to oracle
   def minPoolBoxValue: Long // how much min must exist in oracle pool box
@@ -202,25 +205,24 @@ trait Contracts {
   val ballotScript =
     s"""{ // This box (ballot box):
        |  // R4 the group element of the owner of the ballot token [GroupElement]
-       |  // R5 dummy Int due to AOTC non-lazy evaluation (since pool box has Int at R5). Due to the line marked ****
-       |  // R6 the box id of the update box [Coll[Byte]]
-       |  // R7 the value voted for [Coll[Byte]]
-       |  
-       |  val index = getVar[Short](0).get
+       |  // R5 the box id of the update box [Coll[Byte]]
+       |  // R6 the value voted for [Coll[Byte]]
        |  
        |  val pubKey = SELF.R4[GroupElement].get
        |  
-       |  val output = OUTPUTS(index)
+       |  val output = OUTPUTS(0)
        |  
+       |  // Suggestion: Remove the requirement of isBasicCopy and make the voting tokens "free" assets (in contrast to bounded assets)
        |  val isBasicCopy = output.R4[GroupElement].get == pubKey && 
        |                    output.propositionBytes == SELF.propositionBytes &&
        |                    output.tokens == SELF.tokens && 
        |                    output.value == SELF.value
        |  
        |  sigmaProp(
-       |    isBasicCopy && (
-       |      proveDlog(pubKey) || INPUTS(0).tokens(0)._1 == updateNFT && output.R5[Int].isDefined == false
-       |    )
+       |    proveDlog(pubKey) &&
+       |    output.creationInfo._1 == HEIGHT &&
+       |    SELF.creationInfo._1 < HEIGHT &&
+       |    isBasicCopy  
        |  )
        |}
        |""".stripMargin
@@ -229,11 +231,10 @@ trait Contracts {
     s"""{ // This box (update box):
        |  // Registers empty 
        |  // 
-       |  // ballot boxes (Inputs)
+       |  // ballot boxes (Data Inputs)
        |  // R4 the pub key of voter [GroupElement] (not used here)
-       |  // R5 dummy int due to AOTC non-lazy evaluation (from the line marked ****)
-       |  // R6 the box id of this box [Coll[Byte]]
-       |  // R7 the value voted for [Coll[Byte]]
+       |  // R5 the box id of this box [Coll[Byte]]
+       |  // R6 the value voted for [Coll[Byte]]
        |
        |  // collect and update in one step
        |  val updateBoxOut = OUTPUTS(0) // copy of this box is the 1st output
@@ -258,11 +259,28 @@ trait Contracts {
        |
        |  def isBallot(b: Box) = b.tokens.size > 0 && 
        |                         b.tokens(0)._1 == ballotTokenId &&  
-       |                         b.R6[Coll[Byte]].get == SELF.id && // ensure vote corresponds to this box ****
-       |                         b.R7[Coll[Byte]].get == poolBoxOutHash // check value voted for
-       |         
-       |  val ballots = INPUTS.filter(isBallot)
-       |  sigmaProp(validPoolIn && validPoolOut && validUpdateIn && validUpdateOut && ballots.size >= $minVotes)
+       |                         b.R5[Coll[Byte]].get == SELF.id && // ensure vote corresponds to this box ****
+       |                         b.R6[Coll[Byte]].get == poolBoxOutHash  
+       |  
+       |  val ballots = CONTEXT.dataInputs.filter(isBallot)
+       |  
+       |  def toLong(array: Coll[Byte]) = byteArrayToLong(array.slice(0, 8))
+       |  
+       |  val preBoxId = toLong(ballots(0).id) + 1
+       |
+       |  val orderCheck = ballots.fold((preBoxId, true), { (t: (Long, Boolean), box: Box) =>
+       |       val currBoxId = toLong(box.id)
+       |       val oldBoxId = t._1
+       |       val valid = t._2
+       |       (currBoxId, valid && oldBoxId > currBoxId)
+       |    }
+       |  )
+       |  
+       |  val uniqueDataInputs = orderCheck._2
+       |  
+       |  val votesCount = ballots.fold(0L, { (accum:Long, box:Box) => accum + box.tokens(0)._2 } )
+       |  
+       |  sigmaProp(validPoolIn && validPoolOut && validUpdateIn && validUpdateOut && votesCount >= $minVotes)
        |}
        |""".stripMargin
 

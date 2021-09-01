@@ -1,4 +1,4 @@
-# Oracle pool (v2)
+# Oracle pool (v1b)
 
 ## Difference from v1
 - Using context variable for supplying index of each ballot box in the update transaction (experimental)
