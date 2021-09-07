@@ -5,7 +5,7 @@ import kiosk.encoding.ScalaErgoConverters
 import kiosk.encoding.ScalaErgoConverters.stringToGroupElement
 import kiosk.ergo._
 import kiosk.tx.TxUtil
-import oraclepool.v2.OraclePool
+import oraclepool.v1.OraclePool
 import org.ergoplatform.appkit._
 import org.scalatest.{Matchers, PropSpec}
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
