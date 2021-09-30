@@ -27,7 +27,7 @@ class Contracts(val config: PoolConfig) {
        |  // This box (pool box)
        |  //   epoch start height is stored in creation Height (R3)
        |  //   R4 Current data point (Long)
-       |  // 
+       |  //   R5 Current epoch counter (Int)
        |  //   tokens(0) pool token (NFT)
        |  
        |  val otherTokenId = INPUTS(1).tokens(0)._1

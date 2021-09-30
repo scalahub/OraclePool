@@ -29,7 +29,7 @@ class OracleSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChe
   ///////////////////////////
   //// Create data point ////
   ///////////////////////////
-  property("Create data point") {
+  property("Create data point v2") {
     ergoClient.execute { implicit ctx: BlockchainContext =>
       val oracleBox = bootstrapOracleBox(pubKey1, 10)
       // using correct secret and context var should work
@@ -70,7 +70,7 @@ class OracleSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChe
   /////////////////////////////
   ////// Transfer token ///////
   /////////////////////////////
-  property("Transfer Token") {
+  property("Transfer Token v2") {
     ergoClient.execute { implicit ctx: BlockchainContext =>
       val oracleBox1 = bootstrapOracleBox(pubKey1, 10)
 

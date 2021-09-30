@@ -22,7 +22,7 @@ class RefreshSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyCh
   val privKey4: BigInt = keyPairs(3)._2
   val privKey5: BigInt = keyPairs(4)._2
 
-  property("Refresh pool box") {
+  property("Refresh pool box v2") {
     createMockedErgoClient(MockData(Nil, Nil)).execute { implicit ctx: BlockchainContext =>
       val refreshBox = bootstrapRefreshBox(1000000L)
       val poolBox = bootstrapPoolBox(ctx.getHeight - epochLength - 1, 1)
