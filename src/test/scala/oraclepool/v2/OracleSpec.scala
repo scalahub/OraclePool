@@ -16,14 +16,6 @@ import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 class OracleSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChecks with HttpClientTesting with MockHelpers {
   val ergoClient = createMockedErgoClient(MockData(Nil, Nil))
 
-  val pair1 = keyPairs(0)
-  val pair2 = keyPairs(1)
-
-  val pubKey1: KioskGroupElement = pair1._1
-  val pubKey2: KioskGroupElement = pair2._1
-  val privKey1: BigInt = pair1._2
-  val privKey2: BigInt = pair2._2
-
   val dataValue = 123456L
 
   ///////////////////////////
@@ -70,7 +62,7 @@ class OracleSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChe
   /////////////////////////////
   ////// Transfer token ///////
   /////////////////////////////
-  property("Transfer Token v2") {
+  property("Transfer Oracle Token v2") {
     ergoClient.execute { implicit ctx: BlockchainContext =>
       val oracleBox1 = bootstrapOracleBox(pubKey1, 10)
 
@@ -82,8 +74,6 @@ class OracleSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChe
 
       // new box without r4 should not work
       the[Exception] thrownBy transferOracleBox(oracleBox1, privKey1, None, 1) should have message "Script reduced to false"
-
-      // privKey2 should be able to create data point and transfer data point back to pubKey1
 
       // oracle2 should be able to create data point after transfer from oracle 1
       noException should be thrownBy createDataPoint(dataValue, dummyEpochCounter, oracleAddress, minStorageRent, transferOracleBox(oracleBox1, privKey1, Some(pubKey2), 1), privKey2, 0, 1)

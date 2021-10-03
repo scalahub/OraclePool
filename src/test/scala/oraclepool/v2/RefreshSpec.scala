@@ -10,23 +10,10 @@ import oraclepool.v2.OraclePool.pool._
 import oraclepool.v2.OraclePool.pool.config._
 
 class RefreshSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChecks with HttpClientTesting with MockHelpers {
-  val pubKey1: KioskGroupElement = keyPairs(0)._1
-  val pubKey2: KioskGroupElement = keyPairs(1)._1
-  val pubKey3: KioskGroupElement = keyPairs(2)._1
-  val pubKey4: KioskGroupElement = keyPairs(3)._1
-  val pubKey5: KioskGroupElement = keyPairs(4)._1
-
-  val privKey1: BigInt = keyPairs(0)._2
-  val privKey2: BigInt = keyPairs(1)._2
-  val privKey3: BigInt = keyPairs(2)._2
-  val privKey4: BigInt = keyPairs(3)._2
-  val privKey5: BigInt = keyPairs(4)._2
-
   property("Refresh pool box v2") {
     createMockedErgoClient(MockData(Nil, Nil)).execute { implicit ctx: BlockchainContext =>
       val refreshBox = bootstrapRefreshBox(1000000L)
       val poolBox = bootstrapPoolBox(ctx.getHeight - epochLength - 1, 1)
-      val poolBoxNotExpired = bootstrapPoolBox(ctx.getHeight - epochLength + 1, 1)
 
       val oracleBox1 = bootstrapOracleBox(pubKey1, 10)
       val oracleBox2 = bootstrapOracleBox(pubKey2, 20)
@@ -68,6 +55,95 @@ class RefreshSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyCh
         Array.empty,
         false
       )
+
+      // cannot create oracle box with different public key
+      an[AssertionError] should be thrownBy TxUtil.createTx(
+        Array(
+          poolBox,
+          refreshBox.withContextVars(new ContextVar(0, KioskInt(0).getErgoValue)), // 1st dataPoint box (dataPoint1) is spender
+          dataPoint1.withContextVars(new ContextVar(0, KioskInt(2).getErgoValue)), // output index 2 corresponds to dataPoint1
+          dataPoint2.withContextVars(new ContextVar(0, KioskInt(3).getErgoValue)), // output index 3 corresponds to dataPoint2
+          dataPoint3.withContextVars(new ContextVar(0, KioskInt(4).getErgoValue)), // output index 4 corresponds to dataPoint3
+          dataPoint4.withContextVars(new ContextVar(0, KioskInt(5).getErgoValue)), // output index 5 corresponds to dataPoint4
+          dataPoint5.withContextVars(new ContextVar(0, KioskInt(6).getErgoValue)), // output index 6 corresponds to dataPoint5
+          dummyFundingBox
+        ),
+        Array.empty,
+        Array(
+          KioskBox(poolAddress, minStorageRent, Array(KioskLong(1002), KioskInt(1)), Array((poolNFT, 1))),
+          KioskBox(refreshAddress, minStorageRent, Array.empty, Array((refreshNFT, 1), (rewardTokenId, 1000000L - 10))),
+          KioskBox(oracleAddress, minStorageRent, Array(pubKey1), Array((oracleTokenId, 1), (rewardTokenId, 16))),
+          KioskBox(oracleAddress, minStorageRent, Array(pubKey1), Array((oracleTokenId, 1), (rewardTokenId, 21))),
+          KioskBox(oracleAddress, minStorageRent, Array(pubKey3), Array((oracleTokenId, 1), (rewardTokenId, 31))),
+          KioskBox(oracleAddress, minStorageRent, Array(pubKey4), Array((oracleTokenId, 1), (rewardTokenId, 41))),
+          KioskBox(oracleAddress, minStorageRent, Array(pubKey5), Array((oracleTokenId, 1), (rewardTokenId, 51)))
+        ),
+        fee = 1500000,
+        changeAddress,
+        Array[String](privKey1.toString),
+        Array.empty,
+        false
+      )
+
+      // cannot create oracle box without R4
+      an[Exception] should be thrownBy
+        TxUtil.createTx(
+          Array(
+            poolBox,
+            refreshBox.withContextVars(new ContextVar(0, KioskInt(0).getErgoValue)), // 1st dataPoint box (dataPoint1) is spender
+            dataPoint1.withContextVars(new ContextVar(0, KioskInt(2).getErgoValue)), // output index 2 corresponds to dataPoint1
+            dataPoint2.withContextVars(new ContextVar(0, KioskInt(3).getErgoValue)), // output index 3 corresponds to dataPoint2
+            dataPoint3.withContextVars(new ContextVar(0, KioskInt(4).getErgoValue)), // output index 4 corresponds to dataPoint3
+            dataPoint4.withContextVars(new ContextVar(0, KioskInt(5).getErgoValue)), // output index 5 corresponds to dataPoint4
+            dataPoint5.withContextVars(new ContextVar(0, KioskInt(6).getErgoValue)), // output index 6 corresponds to dataPoint5
+            dummyFundingBox
+          ),
+          Array.empty,
+          Array(
+            KioskBox(poolAddress, minStorageRent, Array(KioskLong(1002), KioskInt(1)), Array((poolNFT, 1))),
+            KioskBox(refreshAddress, minStorageRent, Array.empty, Array((refreshNFT, 1), (rewardTokenId, 1000000L - 10))),
+            KioskBox(oracleAddress, minStorageRent, Array(pubKey1), Array((oracleTokenId, 1), (rewardTokenId, 16))),
+            KioskBox(oracleAddress, minStorageRent, Array.empty, Array((oracleTokenId, 1), (rewardTokenId, 21))),
+            KioskBox(oracleAddress, minStorageRent, Array(pubKey3), Array((oracleTokenId, 1), (rewardTokenId, 31))),
+            KioskBox(oracleAddress, minStorageRent, Array(pubKey4), Array((oracleTokenId, 1), (rewardTokenId, 41))),
+            KioskBox(oracleAddress, minStorageRent, Array(pubKey5), Array((oracleTokenId, 1), (rewardTokenId, 51)))
+          ),
+          fee = 1500000,
+          changeAddress,
+          Array[String](privKey1.toString),
+          Array.empty,
+          false
+        )
+
+      // cannot create oracle box with different type in R4
+      an[Exception] should be thrownBy
+        TxUtil.createTx(
+          Array(
+            poolBox,
+            refreshBox.withContextVars(new ContextVar(0, KioskInt(0).getErgoValue)), // 1st dataPoint box (dataPoint1) is spender
+            dataPoint1.withContextVars(new ContextVar(0, KioskInt(2).getErgoValue)), // output index 2 corresponds to dataPoint1
+            dataPoint2.withContextVars(new ContextVar(0, KioskInt(3).getErgoValue)), // output index 3 corresponds to dataPoint2
+            dataPoint3.withContextVars(new ContextVar(0, KioskInt(4).getErgoValue)), // output index 4 corresponds to dataPoint3
+            dataPoint4.withContextVars(new ContextVar(0, KioskInt(5).getErgoValue)), // output index 5 corresponds to dataPoint4
+            dataPoint5.withContextVars(new ContextVar(0, KioskInt(6).getErgoValue)), // output index 6 corresponds to dataPoint5
+            dummyFundingBox
+          ),
+          Array.empty,
+          Array(
+            KioskBox(poolAddress, minStorageRent, Array(KioskLong(1002), KioskInt(1)), Array((poolNFT, 1))),
+            KioskBox(refreshAddress, minStorageRent, Array.empty, Array((refreshNFT, 1), (rewardTokenId, 1000000L - 10))),
+            KioskBox(oracleAddress, minStorageRent, Array(pubKey1), Array((oracleTokenId, 1), (rewardTokenId, 16))),
+            KioskBox(oracleAddress, minStorageRent, Array(KioskInt(123)), Array((oracleTokenId, 1), (rewardTokenId, 21))),
+            KioskBox(oracleAddress, minStorageRent, Array(pubKey3), Array((oracleTokenId, 1), (rewardTokenId, 31))),
+            KioskBox(oracleAddress, minStorageRent, Array(pubKey4), Array((oracleTokenId, 1), (rewardTokenId, 41))),
+            KioskBox(oracleAddress, minStorageRent, Array(pubKey5), Array((oracleTokenId, 1), (rewardTokenId, 51)))
+          ),
+          fee = 1500000,
+          changeAddress,
+          Array[String](privKey1.toString),
+          Array.empty,
+          false
+        )
 
       // cannot create pool box with different address
       the[Exception] thrownBy TxUtil.createTx(

@@ -10,10 +10,10 @@ case class PoolConfig(epochLength: Int, // blocks
                       minDataPoints: Int,
                       buffer: Int, // the possible delay in which a new pool box gets created, example 4
                       maxDeviationPercent: Int, // the max deviation in percent from first to last data point, example 5
-                      oracleTokenId: String,
-                      refreshNFT: String,
-                      updateNFT: String,
                       poolNFT: String,
+                      refreshNFT: String,
+                      oracleTokenId: String,
+                      updateNFT: String,
                       ballotTokenId: String,
                       minVotes: Int,
                       minStorageRent: Long)
@@ -47,15 +47,14 @@ class Contracts(val config: PoolConfig) {
        |  
        |  val oracleTokenId = fromBase64("${Base64.encode(oracleTokenId.decodeHex)}") // TODO replace with actual
        |  val poolNFT = fromBase64("${Base64.encode(poolNFT.decodeHex)}") // TODO replace with actual 
-       |  
+       |  val epochLength = $epochLength // TODO replace with actual
+       |  val minDataPoints = $minDataPoints // TODO replace with actual
+       |  val buffer = $buffer // TODO replace with actual
+       |  val maxDeviationPercent = $maxDeviationPercent // percent // TODO replace with actual
+       |
+       |  val minStartHeight = HEIGHT - epochLength
        |  val spenderIndex = getVar[Int](0).get // the index of the data-point box (NOT input!) belonging to spender    
        |    
-       |  val epochLength = $epochLength 
-       |  val minStartHeight = HEIGHT - epochLength
-       |  val minDataPoints = $minDataPoints
-       |  val buffer = $buffer 
-       |  val maxDeviationPercent = $maxDeviationPercent // percent
-       |
        |  val poolIn = INPUTS(0)
        |  val poolOut = OUTPUTS(0)
        |  val selfOut = OUTPUTS(1)
@@ -160,7 +159,7 @@ class Contracts(val config: PoolConfig) {
        |                   output.tokens(1)._2 > SELF.tokens(1)._2    && // at least one reward token must be added 
        |                   output.R4[GroupElement].get == selfPubKey  && // for collection preserve public key
        |                   output.value >= SELF.value                 && // nanoErgs value preserved
-       |                   output.R5[Any].isDefined == false             // no more registers, preserving only R4, the group element
+       |                   ! (output.R5[Any].isDefined)                  // no more registers, preserving only R4, the group element
        |
        |  val owner = proveDlog(selfPubKey)  
        |
@@ -172,15 +171,15 @@ class Contracts(val config: PoolConfig) {
   val ballotScript =
     s"""{ // This box (ballot box):
        |  // R4 the group element of the owner of the ballot token [GroupElement]
-       |  // R5 the box id of the update box [Coll[Byte]]
+       |  // R5 the creation height of the update box [Int]
        |  // R6 the value voted for [Coll[Byte]]
        |
        |  val updateNFT = fromBase64("${Base64.encode(updateNFT.decodeHex)}") // TODO replace with actual 
        |
-       |  val minStorageRent = ${minStorageRent}L
+       |  val minStorageRent = ${minStorageRent}L  // TODO replace with actual
        |  
        |  val selfPubKey = SELF.R4[GroupElement].get
-       |  val otherTokenId = INPUTS(0).tokens(0)._1
+       |  val otherTokenId = INPUTS(1).tokens(0)._1
        |  
        |  val outIndex = getVar[Int](0).get
        |  val output = OUTPUTS(outIndex)
@@ -192,7 +191,8 @@ class Contracts(val config: PoolConfig) {
        |  
        |  val update = otherTokenId == updateNFT                 &&
        |               output.R4[GroupElement].get == selfPubKey &&
-       |               output.value >= SELF.value
+       |               output.value >= SELF.value                && 
+       |               ! (output.R5[Any].isDefined)
        |  
        |  val owner = proveDlog(selfPubKey)
        |  
@@ -206,40 +206,43 @@ class Contracts(val config: PoolConfig) {
        |  // 
        |  // ballot boxes (Inputs)
        |  // R4 the pub key of voter [GroupElement] (not used here)
-       |  // R5 the box id of this box [Coll[Byte]]
+       |  // R5 the creation height of this box [Int]
        |  // R6 the value voted for [Coll[Byte]] (hash of the new pool box script)
        |
        |  val poolNFT = fromBase64("${Base64.encode(poolNFT.decodeHex)}") // TODO replace with actual 
        |
        |  val ballotTokenId = fromBase64("${Base64.encode(ballotTokenId.decodeHex)}") // TODO replace with actual 
        |
-       |  val minVotes = 8 
+       |  val minVotes = ${config.minVotes} // TODO replace with actual
        |  
-       |  val poolBoxIn = INPUTS(0) // pool box is 1st input
-       |  val poolBoxOut = OUTPUTS(0) // copy of pool box is the 1st output
+       |  val poolIn = INPUTS(0) // pool box is 1st input
+       |  val poolOut = OUTPUTS(0) // copy of pool box is the 1st output
        |
        |  val updateBoxOut = OUTPUTS(1) // copy of this box is the 2nd output
        |
        |  // compute the hash of the pool output box. This should be the value voted for
-       |  val poolBoxOutHash = blake2b256(poolBoxOut.propositionBytes)
+       |  val poolOutHash = blake2b256(poolOut.propositionBytes)
        |  
-       |  val validPoolIn = poolBoxIn.tokens(0)._1 == poolNFT
+       |  val validPoolIn = poolIn.tokens(0)._1 == poolNFT
        |  
-       |  val validPoolOut = poolBoxIn.propositionBytes != poolBoxOut.propositionBytes  && // script should not be preserved
-       |                     poolBoxIn.tokens == poolBoxOut.tokens                      && // tokens preserved
-       |                     poolBoxIn.value == poolBoxOut.value                        && // value preserved 
-       |                     poolBoxIn.R4[Long] == poolBoxOut.R4[Long]                  && // rate preserved  
-       |                     poolBoxIn.R5[Int] == poolBoxOut.R5[Int]                       // counter preserved
+       |  val validPoolOut = poolIn.propositionBytes != poolOut.propositionBytes  && // script should not be preserved
+       |                     poolIn.tokens == poolOut.tokens                      && // tokens preserved
+       |                     poolIn.value == poolOut.value                        && // value preserved 
+       |                     poolIn.R4[Long] == poolOut.R4[Long]                  && // rate preserved  
+       |                     poolIn.R5[Int] == poolOut.R5[Int]                    && // counter preserved
+       |                     ! (poolOut.R6[Any].isDefined)
        |
        |  
        |  val validUpdateOut = updateBoxOut.tokens == SELF.tokens                     &&
        |                       updateBoxOut.propositionBytes == SELF.propositionBytes &&
-       |                       updateBoxOut.value >= SELF.value 
+       |                       updateBoxOut.value >= SELF.value                       &&
+       |                       updateBoxOut.creationInfo._1 > SELF.creationInfo._1    &&
+       |                       ! (updateBoxOut.R4[Any].isDefined) 
        |
        |  def isValidBallot(b:Box) = if (b.tokens.size > 0) {
        |    b.tokens(0)._1 == ballotTokenId &&
-       |    b.R5[Coll[Byte]].get == SELF.id && // ensure vote corresponds to this box
-       |    b.R6[Coll[Byte]].get == poolBoxOutHash // check value voted for
+       |    b.R5[Int].get == SELF.creationInfo._1 && // ensure vote corresponds to this box by checking creation height
+       |    b.R6[Coll[Byte]].get == poolOutHash // check value voted for
        |  } else false
        |  
        |  val ballotBoxes = INPUTS.filter(isValidBallot)
