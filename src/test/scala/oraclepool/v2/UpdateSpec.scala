@@ -47,10 +47,56 @@ class UpdateSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChe
       val votedBox5 = voteForUpdate(newPool.poolErgoTree.bytes, 1, pool.ballotAddress, config.minStorageRent, ballotBox5, privKey5, 0)
       val votedBox6 = voteForUpdate(newPool.poolErgoTree.bytes, 1, pool.ballotAddress, config.minStorageRent, ballotBox6, privKey6, 0)
 
+      val freshPoolBox = bootstrapPoolBox(0, 1, 1)
+
+      val oracleBox1 = bootstrapOracleBox(pubKey1, 10)
+      val oracleBox2 = bootstrapOracleBox(pubKey2, 20)
+      val oracleBox3 = bootstrapOracleBox(pubKey3, 30)
+      val oracleBox4 = bootstrapOracleBox(pubKey4, 40)
+      val oracleBox5 = bootstrapOracleBox(pubKey5, 50)
+
+      val dataPoint1 = createDataPoint(1, 0, pool.oracleAddress, config.minStorageRent, oracleBox1, privKey1, 0, 10)
+      val dataPoint2 = createDataPoint(1, 0, pool.oracleAddress, config.minStorageRent, oracleBox2, privKey2, 0, 20)
+      val dataPoint3 = createDataPoint(1, 0, pool.oracleAddress, config.minStorageRent, oracleBox3, privKey3, 0, 30)
+      val dataPoint4 = createDataPoint(1, 0, pool.oracleAddress, config.minStorageRent, oracleBox4, privKey4, 0, 40)
+      val dataPoint5 = createDataPoint(1, 0, pool.oracleAddress, config.minStorageRent, oracleBox5, privKey5, 0, 50)
+
+      val refreshedPoolBox: InputBox = TxUtil
+        .createTx(
+          Array(
+            bootstrapPoolBox(0, 1, 0),
+            bootstrapRefreshBox(1000000L).withContextVars(new ContextVar(0, KioskInt(0).getErgoValue)), // 1st dataPoint box (dataPoint1) is spender
+            dataPoint1.withContextVars(new ContextVar(0, KioskInt(2).getErgoValue)), // output index 2 corresponds to dataPoint1
+            dataPoint2.withContextVars(new ContextVar(0, KioskInt(3).getErgoValue)), // output index 3 corresponds to dataPoint2
+            dataPoint3.withContextVars(new ContextVar(0, KioskInt(4).getErgoValue)), // output index 4 corresponds to dataPoint3
+            dataPoint4.withContextVars(new ContextVar(0, KioskInt(5).getErgoValue)), // output index 5 corresponds to dataPoint4
+            dataPoint5.withContextVars(new ContextVar(0, KioskInt(6).getErgoValue)), // output index 6 corresponds to dataPoint5
+            dummyFundingBox
+          ),
+          Array.empty,
+          Array(
+            KioskBox(pool.poolAddress, config.minStorageRent, Array(KioskLong(1), KioskInt(1)), Array((config.poolNFT, 1))),
+            KioskBox(pool.refreshAddress, config.minStorageRent, Array.empty, Array((config.refreshNFT, 1), (rewardTokenId, 1000000L - 10))),
+            KioskBox(pool.oracleAddress, config.minStorageRent, Array(pubKey1), Array((config.oracleTokenId, 1), (rewardTokenId, 16))),
+            KioskBox(pool.oracleAddress, config.minStorageRent, Array(pubKey2), Array((config.oracleTokenId, 1), (rewardTokenId, 21))),
+            KioskBox(pool.oracleAddress, config.minStorageRent, Array(pubKey3), Array((config.oracleTokenId, 1), (rewardTokenId, 31))),
+            KioskBox(pool.oracleAddress, config.minStorageRent, Array(pubKey4), Array((config.oracleTokenId, 1), (rewardTokenId, 41))),
+            KioskBox(pool.oracleAddress, config.minStorageRent, Array(pubKey5), Array((config.oracleTokenId, 1), (rewardTokenId, 51)))
+          ),
+          fee = 1500000,
+          changeAddress,
+          Array[String](privKey1.toString),
+          Array.empty,
+          false
+        )
+        .getOutputsToSpend
+        .get(0)
+
       // update fresh pool box
-      usingPoolBox(bootstrapPoolBox(0, 1, 0))
+      usingPoolBox(freshPoolBox)
 
       // update refreshed pool box
+      usingPoolBox(refreshedPoolBox)
 
       def usingPoolBox(poolBox: InputBox) = {
         // proper update should work
@@ -69,7 +115,7 @@ class UpdateSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChe
             ),
             Array.empty,
             Array(
-              KioskBox(newPool.poolAddress, config.minStorageRent, Array(KioskLong(1), KioskInt(0)), Array((config.poolNFT, 1))),
+              KioskBox(newPool.poolAddress, config.minStorageRent, Array(KioskLong(1), KioskInt(1)), Array((config.poolNFT, 1))),
               KioskBox(pool.updateAddress, config.minStorageRent, Array.empty, Array((config.updateNFT, 1))),
               KioskBox(pool.ballotAddress, config.minStorageRent, Array(pubKey1), Array((config.ballotTokenId, 1))),
               KioskBox(pool.ballotAddress, config.minStorageRent, Array(pubKey2), Array((config.ballotTokenId, 1))),
@@ -101,7 +147,7 @@ class UpdateSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChe
             ),
             Array.empty,
             Array(
-              KioskBox(newPool.poolAddress, config.minStorageRent, Array(KioskLong(1), KioskInt(0)), Array((config.poolNFT, 1))),
+              KioskBox(newPool.poolAddress, config.minStorageRent, Array(KioskLong(1), KioskInt(1)), Array((config.poolNFT, 1))),
               KioskBox(pool.updateAddress, config.minStorageRent, Array.empty, Array((config.updateNFT, 1))),
               KioskBox(pool.ballotAddress, config.minStorageRent, Array(pubKey1), Array((config.ballotTokenId, 1))),
               KioskBox(pool.ballotAddress, config.minStorageRent, Array(pubKey2), Array((config.ballotTokenId, 1))),
@@ -133,7 +179,7 @@ class UpdateSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChe
             ),
             Array.empty,
             Array(
-              KioskBox(junkAddress, config.minStorageRent, Array(KioskLong(1), KioskInt(0)), Array((config.poolNFT, 1))),
+              KioskBox(junkAddress, config.minStorageRent, Array(KioskLong(1), KioskInt(1)), Array((config.poolNFT, 1))),
               KioskBox(pool.updateAddress, config.minStorageRent, Array.empty, Array((config.updateNFT, 1))),
               KioskBox(pool.ballotAddress, config.minStorageRent, Array(pubKey1), Array((config.ballotTokenId, 1))),
               KioskBox(pool.ballotAddress, config.minStorageRent, Array(pubKey2), Array((config.ballotTokenId, 1))),
@@ -164,7 +210,7 @@ class UpdateSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChe
             ),
             Array.empty,
             Array(
-              KioskBox(newPool.poolAddress, config.minStorageRent, Array(KioskLong(1), KioskInt(0)), Array((config.poolNFT, 1))),
+              KioskBox(newPool.poolAddress, config.minStorageRent, Array(KioskLong(1), KioskInt(1)), Array((config.poolNFT, 1))),
               KioskBox(pool.updateAddress, config.minStorageRent, Array.empty, Array((config.updateNFT, 1))),
               KioskBox(pool.ballotAddress, config.minStorageRent, Array(pubKey1), Array((config.ballotTokenId, 1))),
               KioskBox(pool.ballotAddress, config.minStorageRent, Array(pubKey2), Array((config.ballotTokenId, 1))),
@@ -179,7 +225,6 @@ class UpdateSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChe
             false
           ) should have message "Script reduced to false"
 
-        ////////////////////////////////////////////////////////////
         // Should fail when invalid context variable for a ballot box
         an[AssertionError] should be thrownBy
           TxUtil.createTx(
@@ -196,7 +241,7 @@ class UpdateSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChe
             ),
             Array.empty,
             Array(
-              KioskBox(newPool.poolAddress, config.minStorageRent, Array(KioskLong(1), KioskInt(0)), Array((config.poolNFT, 1))),
+              KioskBox(newPool.poolAddress, config.minStorageRent, Array(KioskLong(1), KioskInt(1)), Array((config.poolNFT, 1))),
               KioskBox(pool.updateAddress, config.minStorageRent, Array.empty, Array((config.updateNFT, 1))),
               KioskBox(pool.ballotAddress, config.minStorageRent, Array(pubKey1), Array((config.ballotTokenId, 1))),
               KioskBox(pool.ballotAddress, config.minStorageRent, Array(pubKey2), Array((config.ballotTokenId, 1))),
@@ -227,7 +272,7 @@ class UpdateSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChe
           ),
           Array.empty,
           Array(
-            KioskBox(newPool.poolAddress, config.minStorageRent, Array(KioskLong(1), KioskInt(0)), Array((config.poolNFT, 1))),
+            KioskBox(newPool.poolAddress, config.minStorageRent, Array(KioskLong(1), KioskInt(1)), Array((config.poolNFT, 1))),
             KioskBox(pool.updateAddress, config.minStorageRent, Array.empty, Array((config.updateNFT, 1))),
             KioskBox(pool.ballotAddress, config.minStorageRent, Array(pubKey1), Array((config.ballotTokenId, 1))),
             KioskBox(pool.ballotAddress, config.minStorageRent, Array(pubKey2), Array((config.ballotTokenId, 1))),
@@ -258,7 +303,7 @@ class UpdateSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChe
           ),
           Array.empty,
           Array(
-            KioskBox(newPool.poolAddress, config.minStorageRent, Array(KioskLong(1), KioskInt(0)), Array((config.poolNFT, 1))),
+            KioskBox(newPool.poolAddress, config.minStorageRent, Array(KioskLong(1), KioskInt(1)), Array((config.poolNFT, 1))),
             KioskBox(pool.updateAddress, config.minStorageRent, Array.empty, Array((config.updateNFT, 1))),
             KioskBox(pool.ballotAddress, config.minStorageRent, Array(pubKey1), Array((config.ballotTokenId, 1))),
             KioskBox(pool.ballotAddress, config.minStorageRent, Array(pubKey2), Array((config.ballotTokenId, 1))),
@@ -289,7 +334,7 @@ class UpdateSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChe
           ),
           Array.empty,
           Array(
-            KioskBox(newPool.poolAddress, config.minStorageRent, Array(KioskLong(1), KioskInt(0)), Array((config.poolNFT, 1))),
+            KioskBox(newPool.poolAddress, config.minStorageRent, Array(KioskLong(1), KioskInt(1)), Array((config.poolNFT, 1))),
             KioskBox(pool.updateAddress, config.minStorageRent, Array.empty, Array((config.updateNFT, 1))),
             KioskBox(pool.ballotAddress, config.minStorageRent, Array(pubKey1), Array((config.ballotTokenId, 1))),
             KioskBox(pool.ballotAddress, config.minStorageRent, Array(pubKey2), Array((config.ballotTokenId, 1))),
@@ -320,7 +365,7 @@ class UpdateSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChe
           ),
           Array.empty,
           Array(
-            KioskBox(newPool.poolAddress, config.minStorageRent, Array(KioskLong(1), KioskInt(0)), Array((config.poolNFT, 1))),
+            KioskBox(newPool.poolAddress, config.minStorageRent, Array(KioskLong(1), KioskInt(1)), Array((config.poolNFT, 1))),
             KioskBox(junkAddress, config.minStorageRent, Array.empty, Array((config.updateNFT, 1))),
             KioskBox(pool.ballotAddress, config.minStorageRent, Array(pubKey1), Array((config.ballotTokenId, 1))),
             KioskBox(pool.ballotAddress, config.minStorageRent, Array(pubKey2), Array((config.ballotTokenId, 1))),
@@ -351,7 +396,7 @@ class UpdateSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChe
           ),
           Array.empty,
           Array(
-            KioskBox(newPool.poolAddress, config.minStorageRent, Array(KioskLong(1), KioskInt(0)), Array((config.poolNFT, 1))),
+            KioskBox(newPool.poolAddress, config.minStorageRent, Array(KioskLong(1), KioskInt(1)), Array((config.poolNFT, 1))),
             KioskBox(pool.updateAddress, config.minStorageRent, Array.empty, Array((junkTokenId, 1))),
             KioskBox(pool.ballotAddress, config.minStorageRent, Array(pubKey1), Array((config.ballotTokenId, 1))),
             KioskBox(pool.ballotAddress, config.minStorageRent, Array(pubKey2), Array((config.ballotTokenId, 1))),
@@ -382,7 +427,7 @@ class UpdateSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChe
           ),
           Array.empty,
           Array(
-            KioskBox(newPool.poolAddress, config.minStorageRent, Array(KioskLong(1), KioskInt(0)), Array((config.poolNFT, 1))),
+            KioskBox(newPool.poolAddress, config.minStorageRent, Array(KioskLong(1), KioskInt(1)), Array((config.poolNFT, 1))),
             KioskBox(pool.updateAddress, config.minStorageRent, Array.empty, Array((config.updateNFT, 1))),
             KioskBox(pool.ballotAddress, config.minStorageRent, Array(pubKey1), Array((config.ballotTokenId, 1))),
             KioskBox(pool.ballotAddress, config.minStorageRent, Array(pubKey2), Array((config.ballotTokenId, 1))),
@@ -413,7 +458,7 @@ class UpdateSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChe
           ),
           Array.empty,
           Array(
-            KioskBox(newPool.poolAddress, config.minStorageRent, Array(KioskLong(1), KioskInt(0)), Array((config.poolNFT, 1))),
+            KioskBox(newPool.poolAddress, config.minStorageRent, Array(KioskLong(1), KioskInt(1)), Array((config.poolNFT, 1))),
             KioskBox(pool.updateAddress, config.minStorageRent, Array.empty, Array((config.updateNFT, 1))),
             KioskBox(pool.ballotAddress, config.minStorageRent, Array(pubKey1), Array((config.ballotTokenId, 1))),
             KioskBox(pool.ballotAddress, config.minStorageRent, Array(pubKey2), Array((config.ballotTokenId, 1))),
@@ -444,7 +489,7 @@ class UpdateSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChe
           ),
           Array.empty,
           Array(
-            KioskBox(newPool.poolAddress, config.minStorageRent, Array(KioskLong(2), KioskInt(0)), Array((config.poolNFT, 1))),
+            KioskBox(newPool.poolAddress, config.minStorageRent, Array(KioskLong(2), KioskInt(1)), Array((config.poolNFT, 1))),
             KioskBox(pool.updateAddress, config.minStorageRent, Array.empty, Array((config.updateNFT, 1))),
             KioskBox(pool.ballotAddress, config.minStorageRent, Array(pubKey1), Array((config.ballotTokenId, 1))),
             KioskBox(pool.ballotAddress, config.minStorageRent, Array(pubKey2), Array((config.ballotTokenId, 1))),
@@ -475,7 +520,7 @@ class UpdateSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChe
           ),
           Array.empty,
           Array(
-            KioskBox(newPool.poolAddress, config.minStorageRent, Array(KioskLong(1), KioskInt(0), KioskCollByte("junk".getBytes)), Array((config.poolNFT, 1))),
+            KioskBox(newPool.poolAddress, config.minStorageRent, Array(KioskLong(1), KioskInt(1), KioskCollByte("junk".getBytes)), Array((config.poolNFT, 1))),
             KioskBox(pool.updateAddress, config.minStorageRent, Array.empty, Array((config.updateNFT, 1))),
             KioskBox(pool.ballotAddress, config.minStorageRent, Array(pubKey1), Array((config.ballotTokenId, 1))),
             KioskBox(pool.ballotAddress, config.minStorageRent, Array(pubKey2), Array((config.ballotTokenId, 1))),
@@ -506,7 +551,7 @@ class UpdateSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChe
           ),
           Array.empty,
           Array(
-            KioskBox(newPool.poolAddress, config.minStorageRent, Array(KioskLong(1), KioskInt(0)), Array((junkTokenId, 1))),
+            KioskBox(newPool.poolAddress, config.minStorageRent, Array(KioskLong(1), KioskInt(1)), Array((junkTokenId, 1))),
             KioskBox(pool.updateAddress, config.minStorageRent, Array.empty, Array((config.updateNFT, 1))),
             KioskBox(pool.ballotAddress, config.minStorageRent, Array(pubKey1), Array((config.ballotTokenId, 1))),
             KioskBox(pool.ballotAddress, config.minStorageRent, Array(pubKey2), Array((config.ballotTokenId, 1))),
