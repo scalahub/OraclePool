@@ -1,15 +1,17 @@
 package oraclepool.v2
 
-import kiosk.ergo.{KioskBox, KioskCollByte, KioskGroupElement, KioskInt, KioskLong}
+import kiosk.ergo.{KioskBox, KioskCollByte, KioskInt, KioskLong}
 import kiosk.tx.TxUtil
 import oraclepool.v2.helpers.MockHelpers
 import org.ergoplatform.appkit.{BlockchainContext, ContextVar, HttpClientTesting}
 import org.scalatest.{Matchers, PropSpec}
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
-import oraclepool.v2.OraclePool.pool._
-import oraclepool.v2.OraclePool.pool.config._
 
 class RefreshSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChecks with HttpClientTesting with MockHelpers {
+  lazy val contracts = OraclePool.contracts
+  import contracts._
+  import config._
+
   property("Refresh pool box v2") {
     createMockedErgoClient(MockData(Nil, Nil)).execute { implicit ctx: BlockchainContext =>
       val refreshBox = bootstrapRefreshBox(1000000L)
@@ -722,33 +724,6 @@ class RefreshSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyCh
         false
       ) should have message "Script reduced to false"
 
-      // cannot add junk registers to pool box
-      an[Exception] should be thrownBy TxUtil.createTx(
-        Array(
-          bootstrapPoolBox(ctx.getHeight - epochLength - 1, 1),
-          refreshBox.withContextVars(new ContextVar(0, KioskInt(0).getErgoValue)), // 1st dataPoint box (dataPoint1) is spender
-          dataPoint1.withContextVars(new ContextVar(0, KioskInt(2).getErgoValue)), // output index 2 corresponds to dataPoint1
-          dataPoint2.withContextVars(new ContextVar(0, KioskInt(3).getErgoValue)), // output index 3 corresponds to dataPoint2
-          dataPoint3.withContextVars(new ContextVar(0, KioskInt(4).getErgoValue)), // output index 4 corresponds to dataPoint3
-          dataPoint4.withContextVars(new ContextVar(0, KioskInt(5).getErgoValue)), // output index 5 corresponds to dataPoint4
-          dummyFundingBox
-        ),
-        Array.empty,
-        Array(
-          KioskBox(poolAddress, minStorageRent, Array(KioskLong((1000 + 1001 + 1002 + 1003) / 4), KioskInt(1), KioskCollByte("junk".getBytes())), Array((poolNFT, 1))),
-          KioskBox(refreshAddress, minStorageRent, Array.empty, Array((refreshNFT, 1), (rewardTokenId, 1000000L - 8))),
-          KioskBox(oracleAddress, minStorageRent, Array(pubKey1), Array((oracleTokenId, 1), (rewardTokenId, 15))),
-          KioskBox(oracleAddress, minStorageRent, Array(pubKey2), Array((oracleTokenId, 1), (rewardTokenId, 21))),
-          KioskBox(oracleAddress, minStorageRent, Array(pubKey3), Array((oracleTokenId, 1), (rewardTokenId, 31))),
-          KioskBox(oracleAddress, minStorageRent, Array(pubKey4), Array((oracleTokenId, 1), (rewardTokenId, 41))),
-        ),
-        fee = 1500000,
-        changeAddress,
-        Array[String](privKey1.toString),
-        Array.empty,
-        false
-      )
-
       // cannot add junk registers to oracle box
       an[Exception] should be thrownBy TxUtil.createTx(
         Array(
@@ -776,33 +751,6 @@ class RefreshSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyCh
         false
       )
 
-      // cannot add junk tokens to oracle box
-      an[Exception] should be thrownBy TxUtil.createTx(
-        Array(
-          bootstrapPoolBox(ctx.getHeight - epochLength - 1, 1),
-          refreshBox.withContextVars(new ContextVar(0, KioskInt(0).getErgoValue)), // 1st dataPoint box (dataPoint1) is spender
-          dataPoint1.withContextVars(new ContextVar(0, KioskInt(2).getErgoValue)), // output index 2 corresponds to dataPoint1
-          dataPoint2.withContextVars(new ContextVar(0, KioskInt(3).getErgoValue)), // output index 3 corresponds to dataPoint2
-          dataPoint3.withContextVars(new ContextVar(0, KioskInt(4).getErgoValue)), // output index 4 corresponds to dataPoint3
-          dataPoint4.withContextVars(new ContextVar(0, KioskInt(5).getErgoValue)), // output index 5 corresponds to dataPoint4
-          dummyFundingBox
-        ),
-        Array.empty,
-        Array(
-          KioskBox(poolAddress, minStorageRent, Array(KioskLong((1000 + 1001 + 1002 + 1003) / 4), KioskInt(1)), Array((poolNFT, 1))),
-          KioskBox(refreshAddress, minStorageRent, Array.empty, Array((refreshNFT, 1), (rewardTokenId, 1000000L - 8))),
-          KioskBox(oracleAddress, minStorageRent, Array(pubKey1), Array((oracleTokenId, 1), (rewardTokenId, 15))),
-          KioskBox(oracleAddress, minStorageRent, Array(pubKey2), Array((oracleTokenId, 1), (rewardTokenId, 21))),
-          KioskBox(oracleAddress, minStorageRent, Array(pubKey3), Array((oracleTokenId, 1), (rewardTokenId, 31))),
-          KioskBox(oracleAddress, minStorageRent, Array(pubKey4), Array((oracleTokenId, 1), (rewardTokenId, 41), (junkTokenId, 1))),
-        ),
-        fee = 1500000,
-        changeAddress,
-        Array[String](privKey1.toString),
-        Array.empty,
-        false
-      )
-
       // cannot add junk tokens to pool box
       an[Exception] should be thrownBy TxUtil.createTx(
         Array(
@@ -818,60 +766,6 @@ class RefreshSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyCh
         Array(
           KioskBox(poolAddress, minStorageRent, Array(KioskLong((1000 + 1001 + 1002 + 1003) / 4), KioskInt(1)), Array((poolNFT, 1), (junkTokenId, 1))),
           KioskBox(refreshAddress, minStorageRent, Array.empty, Array((refreshNFT, 1), (rewardTokenId, 1000000L - 8))),
-          KioskBox(oracleAddress, minStorageRent, Array(pubKey1), Array((oracleTokenId, 1), (rewardTokenId, 15))),
-          KioskBox(oracleAddress, minStorageRent, Array(pubKey2), Array((oracleTokenId, 1), (rewardTokenId, 21))),
-          KioskBox(oracleAddress, minStorageRent, Array(pubKey3), Array((oracleTokenId, 1), (rewardTokenId, 31))),
-          KioskBox(oracleAddress, minStorageRent, Array(pubKey4), Array((oracleTokenId, 1), (rewardTokenId, 41))),
-        ),
-        fee = 1500000,
-        changeAddress,
-        Array[String](privKey1.toString),
-        Array.empty,
-        false
-      )
-
-      // cannot add junk tokens to refresh box
-      an[Exception] should be thrownBy TxUtil.createTx(
-        Array(
-          bootstrapPoolBox(ctx.getHeight - epochLength - 1, 1),
-          refreshBox.withContextVars(new ContextVar(0, KioskInt(0).getErgoValue)), // 1st dataPoint box (dataPoint1) is spender
-          dataPoint1.withContextVars(new ContextVar(0, KioskInt(2).getErgoValue)), // output index 2 corresponds to dataPoint1
-          dataPoint2.withContextVars(new ContextVar(0, KioskInt(3).getErgoValue)), // output index 3 corresponds to dataPoint2
-          dataPoint3.withContextVars(new ContextVar(0, KioskInt(4).getErgoValue)), // output index 4 corresponds to dataPoint3
-          dataPoint4.withContextVars(new ContextVar(0, KioskInt(5).getErgoValue)), // output index 5 corresponds to dataPoint4
-          dummyFundingBox
-        ),
-        Array.empty,
-        Array(
-          KioskBox(poolAddress, minStorageRent, Array(KioskLong((1000 + 1001 + 1002 + 1003) / 4), KioskInt(1)), Array((poolNFT, 1))),
-          KioskBox(refreshAddress, minStorageRent, Array.empty, Array((refreshNFT, 1), (rewardTokenId, 1000000L - 8), (junkTokenId, 1))),
-          KioskBox(oracleAddress, minStorageRent, Array(pubKey1), Array((oracleTokenId, 1), (rewardTokenId, 15))),
-          KioskBox(oracleAddress, minStorageRent, Array(pubKey2), Array((oracleTokenId, 1), (rewardTokenId, 21))),
-          KioskBox(oracleAddress, minStorageRent, Array(pubKey3), Array((oracleTokenId, 1), (rewardTokenId, 31))),
-          KioskBox(oracleAddress, minStorageRent, Array(pubKey4), Array((oracleTokenId, 1), (rewardTokenId, 41))),
-        ),
-        fee = 1500000,
-        changeAddress,
-        Array[String](privKey1.toString),
-        Array.empty,
-        false
-      )
-
-      // cannot add junk registers to refresh box
-      an[Exception] should be thrownBy TxUtil.createTx(
-        Array(
-          bootstrapPoolBox(ctx.getHeight - epochLength - 1, 1),
-          refreshBox.withContextVars(new ContextVar(0, KioskInt(0).getErgoValue)), // 1st dataPoint box (dataPoint1) is spender
-          dataPoint1.withContextVars(new ContextVar(0, KioskInt(2).getErgoValue)), // output index 2 corresponds to dataPoint1
-          dataPoint2.withContextVars(new ContextVar(0, KioskInt(3).getErgoValue)), // output index 3 corresponds to dataPoint2
-          dataPoint3.withContextVars(new ContextVar(0, KioskInt(4).getErgoValue)), // output index 4 corresponds to dataPoint3
-          dataPoint4.withContextVars(new ContextVar(0, KioskInt(5).getErgoValue)), // output index 5 corresponds to dataPoint4
-          dummyFundingBox
-        ),
-        Array.empty,
-        Array(
-          KioskBox(poolAddress, minStorageRent, Array(KioskLong((1000 + 1001 + 1002 + 1003) / 4), KioskInt(1)), Array((poolNFT, 1))),
-          KioskBox(refreshAddress, minStorageRent, Array(KioskCollByte("junk".getBytes)), Array((refreshNFT, 1), (rewardTokenId, 1000000L - 8))),
           KioskBox(oracleAddress, minStorageRent, Array(pubKey1), Array((oracleTokenId, 1), (rewardTokenId, 15))),
           KioskBox(oracleAddress, minStorageRent, Array(pubKey2), Array((oracleTokenId, 1), (rewardTokenId, 21))),
           KioskBox(oracleAddress, minStorageRent, Array(pubKey3), Array((oracleTokenId, 1), (rewardTokenId, 31))),

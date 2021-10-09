@@ -161,7 +161,7 @@ trait Contracts {
        |  val poolBox = CONTEXT.dataInputs(0)
        |
        |  // Allow datapoint box to contain box id of any box with pool NFT (i.e., either Live Epoch or Epoch Prep boxes)
-       |  // Earlier we additionally required that the box have the live epoch script.
+       |  // Earlier (v0) we additionally required that the box have the live epoch script.
        |  // In summary:
        |  //    Earlier: (1st data-input has pool NFT) && (1st data-input has live epoch script) 
        |  //    Now:     (1st data-input has pool NFT) 

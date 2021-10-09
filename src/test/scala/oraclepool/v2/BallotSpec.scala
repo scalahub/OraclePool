@@ -1,7 +1,5 @@
 package oraclepool.v2
 
-import oraclepool.v2.OraclePool.pool._
-import oraclepool.v2.OraclePool.pool.config._
 import oraclepool.v2.helpers.MockHelpers
 import org.ergoplatform.appkit.{BlockchainContext, HttpClientTesting}
 import org.scalatest.{Matchers, PropSpec}
@@ -13,6 +11,10 @@ import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 
 class BallotSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChecks with HttpClientTesting with MockHelpers {
   val ergoClient = createMockedErgoClient(MockData(Nil, Nil))
+
+  lazy val contracts = OraclePool.contracts
+  import contracts._
+  import config._
 
   val dataValue = 123456L
 

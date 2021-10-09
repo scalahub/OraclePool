@@ -1,6 +1,6 @@
 package oraclepool.v2
 
-import kiosk.encoding.ScalaErgoConverters
+import kiosk.encoding.ScalaErgoConverters.{getAddressFromErgoTree, getStringFromAddress}
 import kiosk.ergo._
 import kiosk.script.ScriptUtil
 import scorex.util.encode.Base64
@@ -107,17 +107,14 @@ class Contracts(val config: PoolConfig) {
        |  poolOut.tokens           == poolIn.tokens                     && // preserve pool tokens
        |  poolOut.R4[Long].get     == average                           && // rate
        |  poolOut.R5[Int].get      == poolIn.R5[Int].get + 1            && // counter
-       |  ! (poolOut.R6[Any].isDefined)                                 &&
        |  poolOut.propositionBytes == poolIn.propositionBytes           && // preserve pool script
        |  poolOut.value            >= poolIn.value                      &&
        |  poolOut.creationInfo._1  >= HEIGHT - buffer                   && // ensure that new box has correct start epoch height
        |  selfOut.tokens(0)        == SELF.tokens(0)                    && // refresh NFT preserved
        |  selfOut.tokens(1)._1     == SELF.tokens(1)._1                 && // reward token id preserved
        |  selfOut.tokens(1)._2     >= SELF.tokens(1)._2 - rewardEmitted && // reward token amount correctly reduced
-       |  selfOut.tokens.size      == 2                                 && // no more tokens
-       |  ! (selfOut.R4[Any].isDefined)                                 && 
        |  selfOut.propositionBytes == SELF.propositionBytes             && // script preserved
-       |  selfOut.value            >= SELF.value
+       |  selfOut.value            >= SELF.value                       
        |}
        |""".stripMargin
 
@@ -131,14 +128,21 @@ class Contracts(val config: PoolConfig) {
        |  //   tokens(0) oracle token (one)
        |  //   tokens(1) reward tokens collected (one or more) 
        |  //   
-       |  //   When initializing the box, there must be one reward token. When claiming reward, one token must be left unclaimed
+       |  //   When publishing a datapoint, there must be at least one reward token at index 1 
        |  //  
-       |  //   We will connect this box to pool NFT in input #0 (and not the refresh NFT in input #1).
+       |  //   We will connect this box to pool NFT in input #0 (and not the refresh NFT in input #1)
        |  //   This way, we can continue to use the same box after updating pool
-       |  //   This *could* allow the oracle box to be spent during an update 
-       |  //   (when input #2 contains the update NFT instead of the refresh NFT)
+       |  //   This *could* allow the oracle box to be spent during an update
        |  //   However, this is not an issue because the update contract ensures that tokens and registers (except script) of the pool box are preserved
        |
+       |  //   Private key holder can do following things:
+       |  //     1. Change group element (public key) stored in R4
+       |  //     2. Store any value of type in or delete any value from R4 to R9 
+       |  //     3. Store any token or none at 2nd index 
+       |
+       |  //   In order to connect this oracle box to a different refreshNFT after an update, 
+       |  //   the oracle should keep at least one new reward token at index 1 when publishing data-point
+       |  
        |  val poolNFT = fromBase64("${Base64.encode(poolNFT.decodeHex)}") // TODO replace with actual 
        |  
        |  val otherTokenId = INPUTS(0).tokens(0)._1
@@ -147,19 +151,18 @@ class Contracts(val config: PoolConfig) {
        |  val selfPubKey = SELF.R4[GroupElement].get
        |  val outIndex = getVar[Int](0).get
        |  val output = OUTPUTS(outIndex)
-       |
+       |  
        |  val isSimpleCopy = output.tokens(0) == SELF.tokens(0)                && // oracle token is preserved
-       |                     output.tokens(1)._1 == SELF.tokens(1)._1          && // reward tokenId is preserved
-       |                     output.tokens.size == 2                           && // no more tokens
        |                     output.propositionBytes == SELF.propositionBytes  && // script preserved
        |                     output.R4[GroupElement].isDefined                 && // output must have a public key (not necessarily the same)
        |                     output.value >= minStorageRent                       // ensure sufficient Ergs to ensure no garbage collection
        |                     
        |  val collection = otherTokenId == poolNFT                    && // first input must be pool box
+       |                   output.tokens(1)._1 == SELF.tokens(1)._1   && // reward tokenId is preserved (oracle should ensure this contains a reward token)
        |                   output.tokens(1)._2 > SELF.tokens(1)._2    && // at least one reward token must be added 
        |                   output.R4[GroupElement].get == selfPubKey  && // for collection preserve public key
        |                   output.value >= SELF.value                 && // nanoErgs value preserved
-       |                   ! (output.R5[Any].isDefined)                  // no more registers, preserving only R4, the group element
+       |                   ! (output.R5[Any].isDefined)                  // no more registers; prevents box from being reused as a valid data-point
        |
        |  val owner = proveDlog(selfPubKey)  
        |
@@ -189,13 +192,14 @@ class Contracts(val config: PoolConfig) {
        |                     output.tokens == SELF.tokens                     && 
        |                     output.value >= minStorageRent 
        |  
-       |  val update = otherTokenId == updateNFT                 &&
-       |               output.R4[GroupElement].get == selfPubKey &&
-       |               output.value >= SELF.value                && 
-       |               ! (output.R5[Any].isDefined)
+       |  val update = otherTokenId == updateNFT                 && // can only update when update box is the 2nd input
+       |               output.R4[GroupElement].get == selfPubKey && // public key is preserved
+       |               output.value >= SELF.value                && // value preserved or increased
+       |               ! (output.R5[Any].isDefined)                 // no more registers; prevents box from being reused as a valid vote 
        |  
        |  val owner = proveDlog(selfPubKey)
        |  
+       |  // unlike in collection, here we don't require spender to be one of the ballot token holders
        |  isSimpleCopy && (owner || update)
        |}
        |""".stripMargin
@@ -240,9 +244,9 @@ class Contracts(val config: PoolConfig) {
        |                       ! (updateBoxOut.R4[Any].isDefined) 
        |
        |  def isValidBallot(b:Box) = if (b.tokens.size > 0) {
-       |    b.tokens(0)._1 == ballotTokenId &&
+       |    b.tokens(0)._1 == ballotTokenId       &&
        |    b.R5[Int].get == SELF.creationInfo._1 && // ensure vote corresponds to this box by checking creation height
-       |    b.R6[Coll[Byte]].get == poolOutHash // check value voted for
+       |    b.R6[Coll[Byte]].get == poolOutHash      // check value voted for
        |  } else false
        |  
        |  val ballotBoxes = INPUTS.filter(isValidBallot)
@@ -252,8 +256,6 @@ class Contracts(val config: PoolConfig) {
        |  sigmaProp(validPoolIn && validPoolOut && validUpdateOut && votesCount >= minVotes)  
        |}
        |""".stripMargin
-
-  import ScalaErgoConverters._
 
   val poolErgoTree: Values.ErgoTree = ScriptUtil.compile(Map(), poolScript)
   val refreshErgoTree: Values.ErgoTree = ScriptUtil.compile(Map(), refreshScript)

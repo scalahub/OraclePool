@@ -15,34 +15,34 @@ object OraclePool {
     minStorageRent = 10000000
   )
 
-  val pool = new Contracts(poolConfig)
+  val contracts = new Contracts(poolConfig)
 
   def main(args: Array[String]): Unit = {
 
     println("REFRESH CONTRACT")
-    println(pool.refreshScript)
+    println(contracts.refreshScript)
     println
-    println(pool.refreshAddress)
+    println(contracts.refreshAddress)
     println("-------------------------------------------------")
     println("POOL CONTRACT")
-    println(pool.poolScript)
+    println(contracts.poolScript)
     println
-    println(pool.poolAddress)
+    println(contracts.poolAddress)
     println("-------------------------------------------------")
     println("ORACLE CONTRACT")
-    println(pool.oracleScript)
+    println(contracts.oracleScript)
     println
-    println(pool.oracleAddress)
+    println(contracts.oracleAddress)
     println("-------------------------------------------------")
     println("UPDATE CONTRACT")
-    println(pool.updateScript)
+    println(contracts.updateScript)
     println
-    println(pool.updateAddress)
+    println(contracts.updateAddress)
     println("-------------------------------------------------")
     println("BALLOT CONTRACT")
-    println(pool.ballotScript)
+    println(contracts.ballotScript)
     println
-    println(pool.ballotAddress)
+    println(contracts.ballotAddress)
 
   }
 

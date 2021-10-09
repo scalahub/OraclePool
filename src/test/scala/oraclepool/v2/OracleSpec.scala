@@ -1,8 +1,5 @@
 package oraclepool.v2
 
-import kiosk.ergo.KioskGroupElement
-import oraclepool.v2.OraclePool.pool._
-import oraclepool.v2.OraclePool.pool.config._
 import oraclepool.v2.helpers.MockHelpers
 import org.ergoplatform.appkit.{BlockchainContext, HttpClientTesting}
 import org.scalatest.{Matchers, PropSpec}
@@ -17,6 +14,9 @@ class OracleSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChe
   val ergoClient = createMockedErgoClient(MockData(Nil, Nil))
 
   val dataValue = 123456L
+  lazy val contracts = OraclePool.contracts
+  import contracts._
+  import config._
 
   ///////////////////////////
   //// Create data point ////
@@ -36,8 +36,27 @@ class OracleSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChe
       // new box with more amount should work
       noException should be thrownBy createDataPoint(dataValue, dummyEpochCounter, oracleAddress, minStorageRent + 1, oracleBox, privKey1, 0, 1)
 
-      // new box without reward tokens should not work
-      an[Exception] should be thrownBy createDataPoint(dataValue, dummyEpochCounter, oracleAddress, minStorageRent, oracleBox, privKey1, 0, 0)
+      // new box with different reward token should work
+      createDataPoint(dataValue, dummyEpochCounter, oracleAddress, minStorageRent, oracleBox, privKey1, 0, 1, customRewardTokenId = Some(junkTokenId)).getTokens
+        .get(1)
+        .getId
+        .toString
+        .toLowerCase shouldBe junkTokenId.toLowerCase
+
+      // new box without any token at 2nd index should work
+      noException should be thrownBy createDataPoint(dataValue, dummyEpochCounter, oracleAddress, minStorageRent, oracleBox, privKey1, 0, 0)
+
+      // adding reward token to one without reward tokens should work
+      noException should be thrownBy createDataPoint(
+        dataValue,
+        dummyEpochCounter,
+        oracleAddress,
+        minStorageRent,
+        createDataPoint(dataValue, dummyEpochCounter, oracleAddress, minStorageRent, oracleBox, privKey1, 0, 0),
+        privKey1,
+        0,
+        1
+      )
 
       // using wrong context var should not work
       an[Exception] should be thrownBy createDataPoint(dataValue, dummyEpochCounter, oracleAddress, minStorageRent, oracleBox, privKey1, 1, 1)
@@ -69,8 +88,8 @@ class OracleSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChe
       // transfer to other pubKey2 should work
       noException should be thrownBy transferOracleBox(oracleBox1, privKey1, Some(pubKey2), 1)
 
-      // new box without reward tokens should not work
-      an[Exception] should be thrownBy transferOracleBox(oracleBox1, privKey1, Some(pubKey2), 0)
+      // new box without reward tokens should work
+      noException should be thrownBy transferOracleBox(oracleBox1, privKey1, Some(pubKey2), 0)
 
       // new box without r4 should not work
       the[Exception] thrownBy transferOracleBox(oracleBox1, privKey1, None, 1) should have message "Script reduced to false"
