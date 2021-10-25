@@ -21,7 +21,8 @@ trait MockHelpers {
 
   val contracts: Contracts
   import contracts._
-  import config._
+
+  val minStorageRent = config.minStorageRent
 
   val pubKey1: KioskGroupElement = keyPairs(0)._1
   val pubKey2: KioskGroupElement = keyPairs(1)._1
@@ -70,20 +71,17 @@ trait MockHelpers {
   //    2. Must create new ballot boxes
   //    3. Must create new update box
 
-  val newConfig = OraclePool.poolConfig.copy(refreshNFT = newRefreshNFT, oracleTokenId = newOracleTokenId, updateNFT = newUpdateNFT, ballotTokenId = newBallotTokenId, minDataPoints = 5)
-  val newPool = new Contracts(newConfig)
-
   def dummyFundingBox(implicit ctx: BlockchainContext) =
     ctx // for funding transactions
       .newTxBuilder()
       .outBoxBuilder
       .value(dummyNanoErgs)
-      .tokens(new ErgoToken(junkTokenId, 1000000L), new ErgoToken(rewardTokenId, 1000000L))
+      .tokens(new ErgoToken(junkTokenId, 1000000L), new ErgoToken(rewardTokenId, 1000000L), new ErgoToken(newRefreshNFT, 1000000L), new ErgoToken(newRewardTokenId, 1000000L))
       .contract(ctx.compileContract(ConstantsBuilder.empty(), dummyScript))
       .build()
       .convertToInputWith(dummyTxId, dummyIndex)
 
-  def bootstrapBallotBox(pubKey: KioskGroupElement)(implicit ctx: BlockchainContext) =
+  def bootstrapBallotBox(pubKey: KioskGroupElement, optBallotAddress: Option[String] = None, optBallotTokenId: Option[String] = None)(implicit ctx: BlockchainContext) =
     TxUtil
       .createTx(
         Array(
@@ -91,17 +89,17 @@ trait MockHelpers {
             .newTxBuilder()
             .outBoxBuilder
             .value(dummyNanoErgs)
-            .tokens(new ErgoToken(ballotTokenId, 1))
+            .tokens(new ErgoToken(config.ballotTokenId, 1))
             .contract(ctx.compileContract(ConstantsBuilder.empty(), dummyScript))
             .build()
             .convertToInputWith(dummyTxId, dummyIndex)),
         Array[InputBox](),
         Array(
           KioskBox(
-            contracts.ballotAddress,
+            optBallotAddress.getOrElse(contracts.ballotAddress),
             value = minStorageRent,
             registers = Array(pubKey),
-            tokens = Array((ballotTokenId, 1))
+            tokens = Array((optBallotTokenId.getOrElse(config.ballotTokenId), 1))
           )),
         fee = 1000000L,
         changeAddress,
@@ -112,7 +110,8 @@ trait MockHelpers {
       .getOutputsToSpend
       .get(0)
 
-  def bootstrapOracleBox(pubKey: KioskGroupElement, rewardTokenQty: Long)(implicit ctx: BlockchainContext) =
+  def bootstrapOracleBox(pubKey: KioskGroupElement, rewardTokenQty: Long, optRewardTokenId: Option[String] = None, optOracleAddress: Option[String] = None, optOracleTokenId: Option[String] = None)(
+      implicit ctx: BlockchainContext) =
     TxUtil
       .createTx(
         Array(
@@ -120,17 +119,17 @@ trait MockHelpers {
             .newTxBuilder()
             .outBoxBuilder
             .value(dummyNanoErgs)
-            .tokens(new ErgoToken(oracleTokenId, 1), new ErgoToken(rewardTokenId, rewardTokenQty))
+            .tokens(new ErgoToken(optOracleTokenId.getOrElse(config.oracleTokenId), 1), new ErgoToken(optRewardTokenId.getOrElse(rewardTokenId), rewardTokenQty))
             .contract(ctx.compileContract(ConstantsBuilder.empty(), dummyScript))
             .build()
             .convertToInputWith(dummyTxId, dummyIndex)),
         Array[InputBox](),
         Array(
           KioskBox(
-            contracts.oracleAddress,
+            optOracleAddress.getOrElse(contracts.oracleAddress),
             value = minStorageRent,
             registers = Array(pubKey),
-            tokens = Array((oracleTokenId, 1), (rewardTokenId, rewardTokenQty))
+            tokens = Array((optOracleTokenId.getOrElse(config.oracleTokenId), 1), (optRewardTokenId.getOrElse(rewardTokenId), rewardTokenQty))
           )),
         fee = 1000000L,
         changeAddress,
@@ -149,7 +148,7 @@ trait MockHelpers {
             .newTxBuilder()
             .outBoxBuilder
             .value(dummyNanoErgs)
-            .tokens(new ErgoToken(newPoolNFT.getOrElse(poolNFT), 1))
+            .tokens(new ErgoToken(newPoolNFT.getOrElse(config.poolNFT), 1))
             .contract(ctx.compileContract(ConstantsBuilder.empty(), dummyScript))
             .build()
             .convertToInputWith(dummyTxId, dummyIndex)),
@@ -159,7 +158,7 @@ trait MockHelpers {
             contracts.poolAddress,
             value = minStorageRent,
             registers = Array(KioskLong(rate), KioskInt(counter)),
-            tokens = Array((newPoolNFT.getOrElse(poolNFT), 1)),
+            tokens = Array((newPoolNFT.getOrElse(config.poolNFT), 1)),
             creationHeight = Some(customCreationHeight)
           )),
         fee = 1000000L,
@@ -171,7 +170,8 @@ trait MockHelpers {
       .getOutputsToSpend
       .get(0)
 
-  def bootstrapRefreshBox(rewardTokenQty: Long)(implicit ctx: BlockchainContext) =
+  def bootstrapRefreshBox(rewardTokenQty: Long, optRewardTokenId: Option[String] = None, optRefreshAddress: Option[String] = None, optRefreshNFT: Option[String] = None)(
+      implicit ctx: BlockchainContext) =
     TxUtil
       .createTx(
         Array(
@@ -179,17 +179,17 @@ trait MockHelpers {
             .newTxBuilder()
             .outBoxBuilder
             .value(dummyNanoErgs)
-            .tokens(new ErgoToken(refreshNFT, 1), new ErgoToken(rewardTokenId, rewardTokenQty))
+            .tokens(new ErgoToken(optRefreshNFT.getOrElse(config.refreshNFT), 1), new ErgoToken(optRewardTokenId.getOrElse(rewardTokenId), rewardTokenQty))
             .contract(ctx.compileContract(ConstantsBuilder.empty(), dummyScript))
             .build()
             .convertToInputWith(dummyTxId, dummyIndex)),
         Array[InputBox](),
         Array(
           KioskBox(
-            contracts.refreshAddress,
+            optRefreshAddress.getOrElse(contracts.refreshAddress),
             value = minStorageRent,
             registers = Array.empty,
-            tokens = Array((refreshNFT, 1), (rewardTokenId, rewardTokenQty))
+            tokens = Array((optRefreshNFT.getOrElse(config.refreshNFT), 1), (optRewardTokenId.getOrElse(rewardTokenId), rewardTokenQty))
           )),
         fee = 1000000L,
         changeAddress,
@@ -208,7 +208,7 @@ trait MockHelpers {
             .newTxBuilder()
             .outBoxBuilder
             .value(dummyNanoErgs)
-            .tokens(new ErgoToken(updateNFT, 1))
+            .tokens(new ErgoToken(config.updateNFT, 1))
             .contract(ctx.compileContract(ConstantsBuilder.empty(), dummyScript))
             .build()
             .convertToInputWith(dummyTxId, dummyIndex)),
@@ -218,7 +218,7 @@ trait MockHelpers {
             contracts.updateAddress,
             value = minStorageRent,
             registers = Array.empty,
-            tokens = Array((updateNFT, 1)),
+            tokens = Array((config.updateNFT, 1)),
             creationHeight = customCreationHeight
           )),
         fee = 1000000L,
@@ -230,8 +230,9 @@ trait MockHelpers {
       .getOutputsToSpend
       .get(0)
 
-  private def getOracleTokensToAdd(rewardTokenQty: Long, customRewardTokenId: Option[String]): Array[(String, Long)] = {
-    if (rewardTokenQty > 0) Array((oracleTokenId, 1L), (customRewardTokenId.getOrElse(rewardTokenId), rewardTokenQty)) else Array((oracleTokenId, 1L))
+  private def getOracleTokensToAdd(rewardTokenQty: Long, customRewardTokenId: Option[String], optOracleTokenId: Option[String] = None): Array[(String, Long)] = {
+    val oracleTokenIdToUse = optOracleTokenId.getOrElse(config.oracleTokenId)
+    if (rewardTokenQty > 0) Array((oracleTokenIdToUse, 1L), (customRewardTokenId.getOrElse(rewardTokenId), rewardTokenQty)) else Array((oracleTokenIdToUse, 1L))
   }
 
   def createDataPoint(dataPointValue: Long,
@@ -244,7 +245,8 @@ trait MockHelpers {
                       rewardTokenQty: Long,
                       newPubKey: Option[KioskGroupElement] = None,
                       customCreationHeight: Option[Int] = None,
-                      customRewardTokenId: Option[String] = None)(implicit ctx: BlockchainContext) = {
+                      customRewardTokenId: Option[String] = None,
+                      customOracleTokenId: Option[String] = None)(implicit ctx: BlockchainContext) = {
     TxUtil
       .createTx(
         Array(inputOracleBox.withContextVars(new ContextVar(0, KioskInt(contextVarOutIndex).getErgoValue)), dummyFundingBox),
@@ -258,7 +260,7 @@ trait MockHelpers {
               KioskInt(epochCounter),
               KioskLong(dataPointValue)
             ),
-            tokens = getOracleTokensToAdd(rewardTokenQty, customRewardTokenId),
+            tokens = getOracleTokensToAdd(rewardTokenQty, customRewardTokenId, customOracleTokenId),
             creationHeight = customCreationHeight
           )),
         1500000,
@@ -304,7 +306,7 @@ trait MockHelpers {
             contracts.ballotAddress,
             value = minStorageRent,
             registers = newPubKey.toArray,
-            tokens = Array((ballotTokenId, 1L))
+            tokens = Array((config.ballotTokenId, 1L))
           )
         ),
         1500000,
@@ -323,7 +325,8 @@ trait MockHelpers {
                     inputBallotBox: InputBox,
                     privKey: BigInt,
                     contextVarOutIndex: Int,
-                    newPubKey: Option[KioskGroupElement] = None)(implicit ctx: BlockchainContext) = {
+                    newPubKey: Option[KioskGroupElement] = None,
+                    optBallotTokenId: Option[String] = None)(implicit ctx: BlockchainContext) = {
     TxUtil
       .createTx(
         Array(inputBallotBox.withContextVars(new ContextVar(0, KioskInt(contextVarOutIndex).getErgoValue)), dummyFundingBox),
@@ -337,7 +340,7 @@ trait MockHelpers {
               KioskInt(updateBoxCreationHeight),
               KioskCollByte(Blake2b256(votedValue))
             ),
-            tokens = Array((ballotTokenId, 1L))
+            tokens = Array((optBallotTokenId.getOrElse(config.ballotTokenId), 1L))
           )),
         1500000,
         changeAddress,
