@@ -314,7 +314,7 @@ class UpdateSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChe
           false
         )
 
-        // should fail when ballot box has same other type in R4
+        // should fail when ballot box has some other type in R4
         an[Exception] should be thrownBy TxUtil.createTx(
           Array(
             poolBox,
