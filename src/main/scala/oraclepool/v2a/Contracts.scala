@@ -28,6 +28,7 @@ class Contracts(val config: PoolConfig) {
        |  //   epoch start height is stored in creation Height (R3)
        |  //   R4 Current data point (Long)
        |  //   R5 Current epoch counter (Int)
+       |  // 
        |  //   tokens(0) pool token (NFT)
        |  //   tokens(1) reward tokens
        |  //   When initializing the box, there must be one reward token. When claiming reward, one token must be left unclaimed   
@@ -44,7 +45,7 @@ class Contracts(val config: PoolConfig) {
     s"""
        |{ // This box (refresh box)
        |  //   
-       |  //   When initializing the box, there must be one reward token. When claiming reward, one token must be left unclaimed   
+       |  //   tokens(0) refresh token (NFT)
        |  
        |  val oracleTokenId = fromBase64("${Base64.encode(oracleTokenId.decodeHex)}") // TODO replace with actual
        |  val poolNFT = fromBase64("${Base64.encode(poolNFT.decodeHex)}") // TODO replace with actual 
@@ -216,8 +217,8 @@ class Contracts(val config: PoolConfig) {
        |  // R4 the pub key of voter [GroupElement] (not used here)
        |  // R5 the creation height of this box [Int]
        |  // R6 the value voted for [Coll[Byte]] (hash of the new pool box script)
-       |  // R7 the reward token id in new box (can be same as old id)
-       |  // R8 the number of reward tokens in new box
+       |  // R7 the reward token id in new box 
+       |  // R8 the number of reward tokens in new box 
        |
        |  val poolNFT = fromBase64("${Base64.encode(poolNFT.decodeHex)}") // TODO replace with actual 
        |
@@ -255,9 +256,9 @@ class Contracts(val config: PoolConfig) {
        |  def isValidBallot(b:Box) = if (b.tokens.size > 0) {
        |    b.tokens(0)._1 == ballotTokenId       &&
        |    b.R5[Int].get == SELF.creationInfo._1 && // ensure vote corresponds to this box by checking creation height
-       |    b.R6[Coll[Byte]].get == poolOutHash   && // check value voted for
-       |    b.R7[Coll[Byte]].get == rewardTokenId && // check value voted for
-       |    b.R8[Long].get == rewardAmt              // check value voted for
+       |    b.R6[Coll[Byte]].get == poolOutHash   && // check proposition voted for
+       |    b.R7[Coll[Byte]].get == rewardTokenId && // check rewardTokenId voted for
+       |    b.R8[Long].get == rewardAmt              // check rewardTokenAmt voted for
        |  } else false
        |  
        |  val ballotBoxes = INPUTS.filter(isValidBallot)
