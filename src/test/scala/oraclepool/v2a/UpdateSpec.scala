@@ -9,6 +9,7 @@ import org.scalatest.{Matchers, PropSpec}
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import sigmastate.Values
 
+// ToDo: Add tests for failure when reward token id or amount not matching the one in ballots
 class UpdateSpec extends PropSpec with Matchers with ScalaCheckDrivenPropertyChecks with HttpClientTesting with MockHelpers {
   /*
   In Oracle Pool v2, the poolBox participates two spending transactions:
