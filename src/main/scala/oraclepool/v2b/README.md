@@ -1,4 +1,4 @@
-# OraclePool v2.0a
+# OraclePool v2.0b
 
 ### Differences from v2.0a
 
